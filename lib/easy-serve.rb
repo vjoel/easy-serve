@@ -53,18 +53,27 @@ class EasyServe
     @log = opts[:log] || self.class.null_logger
     @clients = [] # pid
     @owner = false
+    @servers = nil
     
     if servers_file
       @servers =
         begin
-          File.open(servers_file) do |f|
-            YAML.load(f)
-          end
+          load_server_table
         rescue Errno::ENOENT
-          nil
+          init_server_table
         end
+    else
+      init_server_table
     end
-    
+  end
+
+  def load_server_table
+    File.open(servers_file) do |f|
+      YAML.load(f)
+    end
+  end
+  
+  def init_server_table
     unless @servers
       @servers = {} # name => Server
       @owner = true
@@ -155,14 +164,14 @@ class EasyServe
   def client *server_names
     clients << fork do
       conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
-      yield *conns if block_given?
+      yield(*conns) if block_given?
       no_interrupt_if_interactive
     end
   end
   
   def local *server_names
     conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
-    yield *conns if block_given?
+    yield(*conns) if block_given?
   ensure
     conns and conns.each do |conn|
       conn.close unless conn.closed?
