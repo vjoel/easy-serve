@@ -91,7 +91,14 @@ class EasyServe
         log.info "stopping #{name.inspect}"
         Process.kill "TERM", server.pid
       end
-      (FileUtils.rm servers_file if servers_file) rescue Errno::ENOENT
+
+      if servers_file
+        begin
+          FileUtils.rm servers_file
+        rescue Errno::ENOENT
+          log.warn "servers file at #{servers_file.inspect} was deleted already"
+        end
+      end
     end
     
     clean_tmpdir
