@@ -82,6 +82,7 @@ class EasyServe
   
   def cleanup
     clients.each do |pid|
+      log.debug {"waiting for client pid=#{pid} to stop"}
       Process.waitpid pid
     end
     

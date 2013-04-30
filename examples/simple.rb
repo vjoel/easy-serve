@@ -20,15 +20,15 @@ EasyServe.start do |ez|
     end
   end
   
-  ez.client "simple-server" do |svr|
+  ez.client "simple-server" do |conn|
     log.progname = "client 1"
-    log.info svr.read
-    svr.write "hello from client 1"
+    log.info conn.read
+    conn.write "hello from #{log.progname}"
   end
   
-  ez.local "simple-server" do |svr|
+  ez.local "simple-server" do |conn|
     log.progname = "parent process"
-    log.info svr.read
-    svr.write "hello from parent"
+    log.info conn.read
+    conn.write "hello from #{log.progname}"
   end
 end
