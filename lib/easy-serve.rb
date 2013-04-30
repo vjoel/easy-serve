@@ -53,7 +53,7 @@ class EasyServe
     @log = opts[:log] || self.class.null_logger
     @clients = [] # pid
     @owner = false
-    @servers = nil
+    @servers = nil # name => Server
     
     if servers_file
       @servers =
@@ -74,9 +74,9 @@ class EasyServe
   end
   
   def init_server_table
-    unless @servers
-      @servers = {} # name => Server
+    @servers ||= begin
       @owner = true
+      {}
     end
   end
   
