@@ -136,11 +136,11 @@ class EasyServe
     name
   end
   
-  def server name, proto = :unix
+  def server name, proto = :unix, host = '127.0.0.1', port = 0
     server_class, *server_addr =
       case proto
-      when :unix; [UNIXServer, choose_socket_filename(name)]
-      when :tcp;  [TCPServer, '127.0.0.1', 0]
+      when /unix/i; [UNIXServer, choose_socket_filename(name)]
+      when /tcp/i;  [TCPServer, host, port]
       else raise ArgumentError, "Unknown socket protocol: #{proto.inspect}"
       end
 
@@ -151,14 +151,14 @@ class EasyServe
       log.progname = name
       log.info "starting"
 
-      svr = server_class.new(*server_addr)
+      svr = server_for(server_class, *server_addr)
       yield svr if block_given?
       no_interrupt_if_interactive
 
       addr =
         case proto
-        when :unix; svr.addr[1]
-        when :tcp; svr.addr(false).values_at(2,1)
+        when /unix/i; svr.addr[1]
+        when /tcp/i; svr.addr(false).values_at(2,1)
         end
       Marshal.dump addr, wr
       wr.close
@@ -169,6 +169,25 @@ class EasyServe
     addr = Marshal.load rd
     rd.close
     servers[name] = Server.new(name, pid, addr)
+  end
+
+  MAX_TRIES = 10
+
+  def server_for server_class, *server_addr
+    tries = 0
+    server_class.new(*server_addr)
+  rescue Errno::EADDRINUSE => ex
+    port = server_addr[2]
+    if port and tries < MAX_TRIES
+      tries += 1
+      port += 1
+      server_addr[2] = port
+      log.warn {
+        "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
+      }
+      retry
+    end
+    raise
   end
 
   def client *server_names
