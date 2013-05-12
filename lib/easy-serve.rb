@@ -175,19 +175,21 @@ class EasyServe
 
   def server_for server_class, *server_addr
     tries = 0
-    server_class.new(*server_addr)
-  rescue Errno::EADDRINUSE => ex
-    port = server_addr[2]
-    if port and tries < MAX_TRIES
-      tries += 1
-      port += 1
-      server_addr[2] = port
-      log.warn {
-        "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
-      }
-      retry
+    begin
+      server_class.new(*server_addr)
+    rescue Errno::EADDRINUSE => ex
+      port = Integer(server_addr[1])
+      if port and tries < MAX_TRIES
+        tries += 1
+        port += 1
+        server_addr[1] = port
+        log.warn {
+          "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
+        }
+        retry
+      end
+      raise
     end
-    raise
   end
 
   def client *server_names
