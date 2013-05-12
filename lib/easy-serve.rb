@@ -136,11 +136,11 @@ class EasyServe
     name
   end
   
-  def server name, proto = :unix, host = '127.0.0.1', port = 0
+  def server name, proto = :unix, host = nil, port = nil
     server_class, *server_addr =
       case proto
-      when /unix/i; [UNIXServer, choose_socket_filename(name)]
-      when /tcp/i;  [TCPServer, host, port]
+      when /unix/i; [UNIXServer, host || choose_socket_filename(name)]
+      when /tcp/i;  [TCPServer, host || '127.0.0.1', port || 0]
       else raise ArgumentError, "Unknown socket protocol: #{proto.inspect}"
       end
 
