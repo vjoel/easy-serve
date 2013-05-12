@@ -38,13 +38,13 @@ class EasyServe
   attr_reader :interactive
   
   def self.start(log: default_logger, **opts)
-    et = new(**opts, log: log)
-    yield et
+    ez = new(**opts, log: log)
+    yield ez
   rescue => ex
     log.error ex
     raise
   ensure
-    et.cleanup if et
+    ez.cleanup if ez
   end
 
   def initialize **opts
