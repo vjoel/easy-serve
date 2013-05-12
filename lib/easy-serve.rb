@@ -1,6 +1,7 @@
 require 'logger'
 require 'socket'
 require 'yaml'
+require 'fileutils'
 
 class EasyServe
   class Server
