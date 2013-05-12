@@ -14,7 +14,7 @@ EasyServe.start servers_file: servers_file do |ez|
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
-    ez.server "simple-server", :tcp, 'localhost', 0 do |svr|
+    ez.server "simple-server", :tcp, '0.0.0.0', 0 do |svr|
       log.debug {"starting server"}
       Thread.new do
         loop do
