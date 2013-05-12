@@ -106,6 +106,7 @@ class EasyServe
   
   def start_servers
     if @owner
+      log.debug {"starting servers"}
       yield
 
       if servers_file
@@ -184,6 +185,7 @@ class EasyServe
     conns and conns.each do |conn|
       conn.close unless conn.closed?
     end
+    log.info "stopped local client"
   end
   
   def socket_for *addr
