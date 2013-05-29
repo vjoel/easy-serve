@@ -129,8 +129,12 @@ class EasyServe
     FileUtils.remove_entry @tmpdir if @tmpdir
   end
   
-  def choose_socket_filename name
-    File.join(tmpdir, "sock-#{name}")
+  def choose_socket_filename name, base: nil
+    if base
+      "#{base}-#{name}"
+    else
+      File.join(tmpdir, "sock-#{name}")
+    end
   end
 
   def inc_socket_filename name
@@ -140,7 +144,7 @@ class EasyServe
   def server name, proto = :unix, host = nil, port = nil
     server_class, *server_addr =
       case proto
-      when /unix/i; [UNIXServer, host || choose_socket_filename(name)]
+      when /unix/i; [UNIXServer, choose_socket_filename(name, base: host)]
       when /tcp/i;  [TCPServer, host || '127.0.0.1', port || 0]
       else raise ArgumentError, "Unknown socket protocol: #{proto.inspect}"
       end
