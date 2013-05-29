@@ -130,10 +130,11 @@ class EasyServe
   end
   
   def choose_socket_filename name
-    @sock_counter ||= 0
-    name = File.join(tmpdir, "sock-#{@sock_counter}-#{name}")
-    @sock_counter += 1
-    name
+    File.join(tmpdir, "sock-#{name}")
+  end
+
+  def inc_socket_filename name
+    name =~ /-\d+\z/ ? name.succ : name + "-0"
   end
   
   def server name, proto = :unix, host = nil, port = nil
@@ -151,7 +152,7 @@ class EasyServe
       log.progname = name
       log.info "starting"
 
-      svr = server_for(name, server_class, *server_addr)
+      svr = server_for(server_class, *server_addr)
       yield svr if block_given?
       no_interrupt_if_interactive
 
@@ -173,14 +174,20 @@ class EasyServe
 
   MAX_TRIES = 10
 
-  def server_for name, server_class, *server_addr
+  def server_for server_class, *server_addr
     tries = 0
     begin
       server_class.new(*server_addr)
     rescue Errno::EADDRINUSE => ex
       if server_class == UNIXServer
-        server_addr = choose_socket_filename(name)
-        retry
+        if tries < MAX_TRIES
+          tries += 1
+          server_addr[0] = inc_socket_filename(server_addr[0])
+          log.warn {
+            "#{ex} -- trying again at path #{server_addr}, #{tries}/#{MAX_TRIES} times."
+          }
+          retry
+        end
       elsif server_class == TCPServer
         port = Integer(server_addr[1])
         if port and tries < MAX_TRIES
@@ -193,7 +200,7 @@ class EasyServe
           retry
         end
       else
-        raise ArgumentError, "unknwon server_class: #{server_class.inspect}"
+        raise ArgumentError, "unknown server_class: #{server_class.inspect}"
       end
       raise
     end
