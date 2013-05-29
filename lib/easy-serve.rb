@@ -151,7 +151,7 @@ class EasyServe
       log.progname = name
       log.info "starting"
 
-      svr = server_for(server_class, *server_addr)
+      svr = server_for(name, server_class, *server_addr)
       yield svr if block_given?
       no_interrupt_if_interactive
 
@@ -173,20 +173,27 @@ class EasyServe
 
   MAX_TRIES = 10
 
-  def server_for server_class, *server_addr
+  def server_for name, server_class, *server_addr
     tries = 0
     begin
       server_class.new(*server_addr)
     rescue Errno::EADDRINUSE => ex
-      port = Integer(server_addr[1])
-      if port and tries < MAX_TRIES
-        tries += 1
-        port += 1
-        server_addr[1] = port
-        log.warn {
-          "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
-        }
+      if server_class == UNIXServer
+        server_addr = choose_socket_filename(name)
         retry
+      elsif server_class == TCPServer
+        port = Integer(server_addr[1])
+        if port and tries < MAX_TRIES
+          tries += 1
+          port += 1
+          server_addr[1] = port
+          log.warn {
+            "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
+          }
+          retry
+        end
+      else
+        raise ArgumentError, "unknwon server_class: #{server_class.inspect}"
       end
       raise
     end
