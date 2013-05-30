@@ -89,8 +89,12 @@ class EasyServe
     
     if @owner
       servers.each do |name, server|
-        log.info "stopping #{name.inspect}"
+        log.info "stopping #{name}"
         Process.kill "TERM", server.pid
+        Process.waitpid server.pid
+        if server.addr.kind_of? String
+          FileUtils.remove_entry server.addr
+        end
       end
 
       if servers_file
