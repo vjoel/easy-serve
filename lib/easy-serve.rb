@@ -4,6 +4,8 @@ require 'yaml'
 require 'fileutils'
 
 class EasyServe
+  VERSION = "0.2"
+
   class Server
     attr_reader :name, :pid, :addr
     
