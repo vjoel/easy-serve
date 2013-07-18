@@ -90,7 +90,11 @@ class EasyServe
 
     clients.each do |pid|
       log.debug {"waiting for client pid=#{pid} to stop"}
-      Process.waitpid pid
+      begin
+        Process.waitpid pid
+      rescue Errno::ECHILD
+        log.debug {"client pid=#{pid} was already waited for"}
+      end
     end
     
     if @owner
