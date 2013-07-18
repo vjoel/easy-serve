@@ -221,11 +221,13 @@ class EasyServe
   end
 
   def client *server_names
-    clients << fork do
+    c = fork do
       conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
       yield(*conns) if block_given?
       no_interrupt_if_interactive
     end
+    clients << c
+    c
   end
   
   def local *server_names
