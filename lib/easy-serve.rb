@@ -37,6 +37,7 @@ class EasyServe
   attr_accessor :log
   attr_accessor :servers
   attr_reader :clients
+  attr_reader :passive_clients
   attr_reader :servers_file
   attr_reader :interactive
   
@@ -55,6 +56,7 @@ class EasyServe
     @interactive = opts[:interactive]
     @log = opts[:log] || self.class.null_logger
     @clients = [] # pid
+    @passive_clients = [] # pid
     @owner = false
     @servers = nil # name => Server
     
@@ -90,6 +92,16 @@ class EasyServe
 
     clients.each do |pid|
       log.debug {"waiting for client pid=#{pid} to stop"}
+      begin
+        Process.waitpid pid
+      rescue Errno::ECHILD
+        log.debug {"client pid=#{pid} was already waited for"}
+      end
+    end
+
+    passive_clients.each do |pid|
+      log.debug {"stopping client pid=#{pid}"}
+      Process.kill("TERM", pid)
       begin
         Process.waitpid pid
       rescue Errno::ECHILD
@@ -224,13 +236,14 @@ class EasyServe
     end
   end
 
-  def client *server_names
+  # A passive client may be stopped after all active clients exit.
+  def client *server_names, passive: false
     c = fork do
       conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
       yield(*conns) if block_given?
       no_interrupt_if_interactive
     end
-    clients << c
+    (passive ? passive_clients : clients) << c
     c
   end
   
