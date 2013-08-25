@@ -332,10 +332,10 @@ class EasyServe
                   loop do
                     sleep 1
                     begin
-                      pinger = DRbObject.new(nil, ctrl_uri)
+                      pinger = DRbObject.new_with_uri(ctrl_uri)
                       pinger.ping
                         # stop the remote process when ssh is interrupted
-                        ## is there a better way?
+                        ## is there a better way? ssh keepalive?
                     rescue
                       log.error "drb connection broken"
                         # won't show up anywhere, unless log set to file
@@ -359,21 +359,25 @@ class EasyServe
       ssh.close_write
       result = ssh.gets
       
-      error = result[/ez error/]
-      if error
-        raise RemoteError, "error raised in remote: #{ssh.read}"
+      if !result
+        raise RemoteError, "problem with ssh connection to remote"
       else
-        uri = result[/druby:\/\/\S+/]
-        if uri
-          log.debug "remote is at #{uri}"
-          ro = DRbObject.new(nil, uri)
-          conns = ro[:conns]
-          conns_ary = []
-          conns.each {|c| conns_ary << c} # needed because it's a DRbObject
-          yield(*conns_ary) if block_given?
+        error = result[/ez error/]
+        if error
+          raise RemoteError, "error raised in remote: #{ssh.read}"
         else
-          raise RemoteError,
-            "no druby uri in string from remote: #{result.inspect}"
+          uri = result[/druby:\/\/\S+/]
+          if uri
+            log.debug "remote is at #{uri}"
+            ro = DRbObject.new_with_uri(uri)
+            conns = ro[:conns]
+            conns_ary = []
+            conns.each {|c| conns_ary << c} # needed because it's a DRbObject
+            yield(*conns_ary) if block_given?
+          else
+            raise RemoteError,
+              "no druby uri in string from remote: #{result.inspect}"
+          end
         end
       end
     end
