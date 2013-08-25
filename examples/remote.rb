@@ -23,7 +23,7 @@ EasyServe.start do |ez|
             log.info "wrote greeting"
             conn.close_write
             log.info "trying to read from #{conn.inspect}"
-            log.info conn.read
+            log.info "received: #{conn.read}"
             conn.close
           end
         end
@@ -36,7 +36,7 @@ EasyServe.start do |ez|
     # this block runs locally, but calls methods on the remote using drb
     log.progname = "druby remote on #{host}"
     log.info "trying to read from #{conn.inspect}"
-    log.info conn.read
+    log.info "received: #{conn.read}"
       # note: conn is drb proxy to real conn on remote host, so after the
       # string is read from the socket in the remote, it is then serialized
       # by drb back to this (local) process. Don't do this in production!
