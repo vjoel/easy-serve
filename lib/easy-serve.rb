@@ -58,17 +58,19 @@ class EasyServe
     @clients = [] # pid
     @passive_clients = [] # pid
     @owner = false
-    @servers = nil # name => Server
+    @servers = opts[:servers] # name => Server
     
-    if servers_file
-      @servers =
-        begin
-          load_server_table
-        rescue Errno::ENOENT
-          init_server_table
-        end
-    else
-      init_server_table
+    unless servers
+      if servers_file
+        @servers =
+          begin
+            load_server_table
+          rescue Errno::ENOENT
+            init_server_table
+          end
+      else
+        init_server_table
+      end
     end
   end
 
