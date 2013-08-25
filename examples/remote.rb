@@ -10,12 +10,11 @@ end
 
 EasyServe.start do |ez|
   log = ez.log
-  log.level = Logger::DEBUG
+  log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
     ez.server "simple-server", :tcp, '0.0.0.0', 0 do |svr|
-      log.debug {"starting server"}
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
