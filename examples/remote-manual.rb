@@ -4,7 +4,8 @@ servers_file = ARGV.shift
 unless servers_file
   abort <<-END
     Usage: #$0 servers_file
-    For the client, copy the generated servers_file to the client host.
+    For the client, copy the generated servers_file to the client host, and
+    run with the same command.
   END
 end
 
