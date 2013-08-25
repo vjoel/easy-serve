@@ -390,6 +390,9 @@ class EasyServe
       else TCPSocket
       end
     socket_class.new(*addr)
+  rescue => ex
+    ex.message << " addr=#{addr.inspect}"
+    raise
   end
 
   # ^C in the irb session (parent process) should not kill the
