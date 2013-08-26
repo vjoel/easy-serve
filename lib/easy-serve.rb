@@ -169,11 +169,27 @@ class EasyServe
     name =~ /-\d+\z/ ? name.succ : name + "-0"
   end
   
+  def host_name
+    @host_name ||= begin
+      hn = Socket.gethostname
+      begin
+        official_hostname = Socket.gethostbyname(hn)[0]
+        if /\./ =~ official_hostname
+          official_hostname
+        else
+          official_hostname + ".local"
+        end
+      rescue
+        'localhost'
+      end
+    end
+  end
+  
   def server name, proto = :unix, host = nil, port = nil
     server_class, *server_addr =
       case proto
       when /unix/i; [UNIXServer, choose_socket_filename(name, base: host)]
-      when /tcp/i;  [TCPServer, host || '127.0.0.1', port || 0]
+      when /tcp/i;  [TCPServer, host || host_name, port || 0]
       else raise ArgumentError, "Unknown socket protocol: #{proto.inspect}"
       end
 
