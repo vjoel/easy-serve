@@ -1,17 +1,12 @@
 require 'easy-serve/remote'
 
-addr_here = ARGV.shift
 addr_there = ARGV.shift
 
 unless addr_there
   abort <<-END
 
-    Usage: #$0 addr_here addr_there
+    Usage: #$0 addr_there
 
-    The 'addr_here' is the IP address of (or hostname that resolves to) the
-    local interface that the server listens on. For example, mylaptop.local, in
-    the case of avahi (rendezvous).
-    
     The 'addr_there' is the remote address on which client code will run.
     It must be a destination accepted by ssh, optionally including a user name:
 
@@ -29,7 +24,7 @@ EasyServe.start do |ez|
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
-    ez.server "simple-server", :tcp, addr_here, 0 do |svr|
+    ez.server "simple-server", :tcp, nil, 0 do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
