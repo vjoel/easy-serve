@@ -1,10 +1,25 @@
-require 'easy-serve'
+require 'easy-serve/remote'
 
-host = ARGV.shift
-unless host
+addr_here = ARGV.shift
+addr_there = ARGV.shift
+
+unless addr_there
   abort <<-END
-    Usage: #$0 [user@]hostname
-    The argument may be any destination accepted by ssh, including host aliases.
+
+    Usage: #$0 addr_here addr_there
+
+    The 'addr_here' is the IP address of (or hostname that resolves to) the
+    local interface that the server listens on. For example, mylaptop.local, in
+    the case of avahi (rendezvous).
+    
+    The 'addr_there' is the remote address on which client code will run.
+    It must be a destination accepted by ssh, optionally including a user name:
+
+      [user@]hostname
+    
+    The 'hostname' must be a valid hostname (not just an ssh alias), since it
+    will be used for the drb connection as well.
+
   END
 end
 
@@ -14,7 +29,7 @@ EasyServe.start do |ez|
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
-    ez.server "simple-server", :tcp, '0.0.0.0', 0 do |svr|
+    ez.server "simple-server", :tcp, addr_here, 0 do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -31,10 +46,9 @@ EasyServe.start do |ez|
     end
   end
   
-  # druby version
-  ez.remote "simple-server", host: host do |conn|
+  ez.remote "simple-server", addr_here: addr_here, host: addr_there do |conn|
     # this block runs locally, but calls methods on the remote using drb
-    log.progname = "druby remote on #{host}"
+    log.progname = "druby remote on #{addr_there}"
     log.info "trying to read from #{conn.inspect}"
     log.info "received: #{conn.read}"
       # note: conn is drb proxy to real conn on remote host, so after the
