@@ -14,7 +14,6 @@ class EasyServe
   end
   
   # useful for testing only -- use _eval or _run for production
-  # set uri: "foo.local" in case hostname is just "foo"
   def remote_drb *server_names, addr_here: nil, host: nil
        ## passive option? remote logfile?
     require 'drb'
