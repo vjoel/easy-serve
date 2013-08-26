@@ -15,6 +15,7 @@ class EasyServe
 
     IO.popen ["ssh", host, "ruby"], "w+" do |ssh|
       ssh.puts %Q{
+        $stdout.sync = true
         begin
           require 'drb'
           require 'yaml'
@@ -31,7 +32,6 @@ class EasyServe
             log.formatter = nil if $VERBOSE
 
             ez.local *server_names do |*conns|
-              $stdout.sync = true
               begin
                 DRb.start_service(host_uri, {conns: conns})
                 puts DRb.uri
