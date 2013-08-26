@@ -21,7 +21,8 @@ class EasyServe
     local_uri = "druby://#{addr_here}:0"
     DRb.start_service(local_uri, Pinger.new(log: log, host: host))
     
-    host_uri = "druby://" + host.sub(/.*@/,"") + ":0"
+    hostname = host.sub(/.*@/,"")
+    host_uri = "druby://#{hostname}:0"
 
     log.progname = "remote_drb"
     
