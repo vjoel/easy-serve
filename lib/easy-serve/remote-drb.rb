@@ -11,7 +11,7 @@ class EasyServe
     hostname = host.sub(/.*@/,"")
     host_uri = "druby://#{hostname}:0"
 
-    log.progname = "remote_drb"
+    log.progname = "remote_drb #{host}"
 
     IO.popen ["ssh", host, "ruby"], "w+" do |ssh|
       ssh.puts %Q{
