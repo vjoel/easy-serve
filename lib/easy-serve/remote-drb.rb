@@ -40,7 +40,7 @@ class EasyServe
                   loop do
                     sleep 1
                     begin
-                      puts "." ## consume these by reading in a thread?
+                      puts "."
                     rescue
                       exit
                     end
@@ -71,6 +71,12 @@ class EasyServe
         else
           uri = result[/druby:\/\/\S+/]
           if uri
+            Thread.new do
+              loop do
+                ssh.gets # consume the "."
+              end
+            end
+          
             log.debug "remote is at #{uri}"
             ro = DRbObject.new_with_uri(uri)
             conns = ro[:conns]
