@@ -46,7 +46,7 @@ EasyServe.start do |ez|
     end
   end
   
-  ez.remote "simple-server", addr_here: addr_here, host: addr_there do |conn|
+  ez.remote "simple-server", host: addr_there do |conn|
     # this block runs locally, but calls methods on the remote using drb
     log.progname = "druby remote on #{addr_there}"
     log.info "trying to read from #{conn.inspect}"

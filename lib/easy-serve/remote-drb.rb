@@ -1,31 +1,18 @@
+require 'drb'
+
 class EasyServe
-  class Pinger
-    attr_reader :log
-    attr_reader :host
-
-    def initialize log: log, host: host
-      @log = log
-      @host = host
-    end
-
-    def ping
-      log.debug "ping from remote on #{host}"
-    end
-  end
-  
   # useful for testing only -- use _eval or _run for production
-  def remote_drb *server_names, addr_here: nil, host: nil
-       ## passive option? remote logfile?
-    require 'drb'
-    
-    local_uri = "druby://#{addr_here}:0"
-    DRb.start_service(local_uri, Pinger.new(log: log, host: host))
-    
+  def remote_drb *server_names, host: nil
+    ## passive option?
+    ## remote logfile option?
+
+    DRb.start_service("druby://#{host_name}:0", nil)
+
     hostname = host.sub(/.*@/,"")
     host_uri = "druby://#{hostname}:0"
 
     log.progname = "remote_drb"
-    
+
     IO.popen ["ssh", host, "ruby"], "w+" do |ssh|
       ssh.puts %Q{
         begin
@@ -36,7 +23,6 @@ class EasyServe
           server_names = #{server_names.inspect}
           servers = YAML.load(#{YAML.dump(servers).inspect})
           log_level = #{log.level}
-          ctrl_uri = #{DRb.uri.inspect}
           host_uri = #{host_uri.inspect}
           
           EasyServe.start servers: servers do |ez|
@@ -54,19 +40,15 @@ class EasyServe
                   loop do
                     sleep 1
                     begin
-                      pinger = DRbObject.new_with_uri(ctrl_uri)
-                      pinger.ping
-                        # stop the remote process when ssh is interrupted
-                        ## is there a better way? ssh keepalive?
+                      puts "." ## consume these by reading in a thread?
                     rescue
-                      log.error "drb connection broken"
-                        # won't show up anywhere, unless log set to file
                       exit
                     end
                   end
                 end
                 
                 DRb.thread.join
+
               rescue => ex
                 puts "ez error", ex, ex.backtrace
               end
