@@ -45,10 +45,10 @@ class EasyServe
             log.formatter = nil if $VERBOSE
 
             ez.local *server_names do |*conns|
+              $stdout.sync = true
               begin
                 DRb.start_service(host_uri, {conns: conns})
                 puts DRb.uri
-                $stdout.flush
                 
                 Thread.new do
                   loop do
@@ -69,7 +69,6 @@ class EasyServe
                 DRb.thread.join
               rescue => ex
                 puts "ez error", ex, ex.backtrace
-                $stdout.flush
               end
             end
           end
