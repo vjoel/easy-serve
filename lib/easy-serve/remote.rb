@@ -10,7 +10,7 @@ class EasyServe
       require 'easy-serve/remote-eval'
       remote_eval *server_names, host: host, **opts
 
-    elsif opts[:run]
+    elsif opts[:file]
       require 'easy-serve/remote-run'
       remote_run *server_names, host: host, **opts
 
