@@ -1,7 +1,11 @@
 require 'drb'
 
 class EasyServe
-  # useful for testing only -- use _eval or _run for production
+  # useful for testing only -- use _eval or _run for production.
+  # Note: as with #local, the code block runs in the main thread, by default.
+  # It's up to you to start another thread inside the code block if you
+  # want more concurrency. This is for convenience when testing (cases in which
+  # concurrency needs to be controlled explicitly).
   def remote_drb *server_names, host: nil
     ## passive option?
     ## remote logfile option?
