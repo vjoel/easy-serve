@@ -7,7 +7,6 @@ class EasyServe
   # want more concurrency. This is for convenience when testing (cases in which
   # concurrency needs to be controlled explicitly).
   def remote_drb *server_names, host: nil
-    ## passive option?
     ## remote logfile option?
 
     DRb.start_service("druby://#{host_name}:0", nil)

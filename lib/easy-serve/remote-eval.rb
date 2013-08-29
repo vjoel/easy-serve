@@ -2,14 +2,20 @@ class EasyServe
   # useful simple cases in testing and in production, but long eval strings
   # can be hard to debug -- use _run instead. Returns pid of child managing
   # the ssh connection.
-  def remote_eval *server_names, host: nil, **opts
-    ## passive option?
+  def remote_eval *server_names, host: nil, passive: false, **opts
     ## remote logfile option?
 
-    log.progname = "remote_eval #{host}"
-
     child_pid = fork do
+      log.progname = "remote_eval #{host}"
+
+      old_term = nil
+
       IO.popen ["ssh", host, "ruby"], "w+" do |ssh|
+        old_term = trap "TERM" do
+          Process.kill "TERM", ssh.pid
+          exit
+        end
+
         ssh.puts %Q{
           $stdout.sync = true
           begin
@@ -61,9 +67,11 @@ class EasyServe
           end
         end
       end
+
+      trap "TERM", old_term
     end
 
-    clients << child_pid
+    (passive ? passive_clients : clients) << child_pid
     child_pid
   end
 end

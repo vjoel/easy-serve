@@ -1,14 +1,20 @@
 class EasyServe
   # useful in production, though it requires remote lib files to be set up.
   # Returns pid of child managing the ssh connection.
-  def remote_run *server_names, host: nil, **opts
-    ## passive option?
+  def remote_run *server_names, host: nil, passive: false, **opts
     ## remote logfile option?
 
-    log.progname = "remote_run #{host}"
-
     child_pid = fork do
+      log.progname = "remote_run #{host}"
+
+      old_term = nil
+
       IO.popen ["ssh", host, "ruby"], "w+" do |ssh|
+        old_term = trap "TERM" do
+          Process.kill "TERM", ssh.pid
+          exit
+        end
+
         ssh.puts %Q{
           $stdout.sync = true
           begin
@@ -59,9 +65,11 @@ class EasyServe
           end
         end
       end
+
+      trap "TERM", old_term
     end
 
-    clients << child_pid
+    (passive ? passive_clients : clients) << child_pid
     child_pid
   end
 end
