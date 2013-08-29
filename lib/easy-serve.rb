@@ -253,7 +253,7 @@ class EasyServe
       raise
 
     rescue => ex
-      ex.message << " addr=#{server_addr.inspect}"
+      ex.message << "; addr=#{server_addr.inspect}"
       raise
     end
   end
@@ -287,7 +287,7 @@ class EasyServe
       end
     socket_class.new(*addr)
   rescue => ex
-    ex.message << " addr=#{addr.inspect}"
+    ex.message << "; addr=#{addr.inspect}"
     raise
   end
 
