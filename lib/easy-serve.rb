@@ -251,6 +251,10 @@ class EasyServe
         raise ArgumentError, "unknown server_class: #{server_class.inspect}"
       end
       raise
+
+    rescue => ex
+      ex.message << " addr=#{server_addr.inspect}"
+      raise
     end
   end
 
