@@ -43,7 +43,7 @@ EasyServe.start do |ez|
   ez.remote "simple-server", host: addr_there, passive: true, eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
-    log.progname = "eval remote on \#{host}"
+    log.progname = "eval remote 1 (passive) on \#{host}"
     log.info "trying to read from \#{conn.inspect}"
     log.info "received: \#{conn.read}"
     conn.write "hello from \#{log.progname}"
@@ -55,7 +55,7 @@ EasyServe.start do |ez|
   ez.remote "simple-server", host: addr_there, eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
-    log.progname = "eval remote on \#{host}"
+    log.progname = "eval remote 2 on \#{host}"
     log.info "trying to read from \#{conn.inspect}"
     log.info "received: \#{conn.read}"
     conn.write "hello from \#{log.progname}"
