@@ -2,6 +2,7 @@ require 'msgpack'
 require 'easy-serve'
 
 def manage_remote_run_client msg
+  $VERBOSE = msg["verbose"]
   server_names, servers_list, log_level, host, dir, file, class_name, args =
     msg.values_at(*%w{
       server_names servers_list log_level host

@@ -27,6 +27,7 @@ class EasyServe
 
         MessagePack.pack(
           {
+            verbose:      $VERBOSE,
             server_names: server_names,
             servers_list: servers_list,
             log_level:    log.level,

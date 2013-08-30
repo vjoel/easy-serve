@@ -8,6 +8,7 @@ class EasyServe
 end
 
 def manage_remote_eval_client msg
+  $VERBOSE = msg["verbose"]
   server_names, servers_list, log_level, eval_string, host =
     msg.values_at(*%w{server_names servers_list log_level eval_string host})
 
@@ -19,7 +20,7 @@ def manage_remote_eval_client msg
   EasyServe.start servers: servers do |ez|
     log = ez.log
     log.level = log_level
-    log.formatter = nil if $VERBOSE ## pass verbose over ssh?
+    log.formatter = nil if $VERBOSE
 
     ez.local *server_names do |*conns|
       begin
