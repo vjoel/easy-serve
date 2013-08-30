@@ -22,4 +22,6 @@ Gem::Specification.new do |s|
     "--title", "easy-serve", "--main", "README.md"]
   s.require_paths = ["lib"]
   s.summary = "Framework for starting tcp/unix servers and connected clients under one parent process"
+
+  s.add_dependency 'msgpack'
 end

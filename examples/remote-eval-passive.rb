@@ -19,7 +19,7 @@ end
 
 EasyServe.start do |ez|
   log = ez.log
-  log.level = Logger::DEBUG
+  log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
@@ -49,8 +49,17 @@ EasyServe.start do |ez|
     conn.write "hello from \#{log.progname}"
     conn.close
     
-    sleep # without passive, this would hang the whole distributed app
+    sleep
+      # Without passive, this sleep would prevent the distributed app from
+      # exiting -- the simple-server above could not be safely stopped, since
+      # there's no guarantee that it is no longer needed. The passive
+      # declaration make it clear that this process can be stopped after all
+      # non-passive clients have finished, and then the server can be stopped.
+      # Of course, this also means that if all other clients execute very
+      # quickly, this client might never get a chance to run.
   }
+  
+  # sleep 1 # Use this to ensure (for testing) that the above client runs.
   
   ez.remote "simple-server", host: addr_there, eval: %{
     conn = conns[0]
