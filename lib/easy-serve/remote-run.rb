@@ -56,7 +56,7 @@ class EasyServe
       trap "TERM", old_term
     end
 
-    (passive ? passive_clients : clients) << child_pid
+    (passive ? passive_children : children) << child_pid
     child_pid
   end
 end

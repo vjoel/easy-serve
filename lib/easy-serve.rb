@@ -36,8 +36,8 @@ class EasyServe
 
   attr_accessor :log
   attr_accessor :servers
-  attr_reader :clients
-  attr_reader :passive_clients
+  attr_reader :children
+  attr_reader :passive_children
   attr_reader :servers_file
   attr_reader :interactive
   
@@ -55,8 +55,8 @@ class EasyServe
     @servers_file = opts[:servers_file]
     @interactive = opts[:interactive]
     @log = opts[:log] || self.class.null_logger
-    @clients = [] # pid
-    @passive_clients = [] # pid
+    @children = [] # pid
+    @passive_children = [] # pid
     @owner = false
     @tmpdir = nil
     @servers = opts[:servers] # name => Server
@@ -93,7 +93,7 @@ class EasyServe
       trap("INT", handler)
     end
 
-    clients.each do |pid|
+    children.each do |pid|
       log.debug {"waiting for client pid=#{pid} to stop"}
       begin
         Process.waitpid pid
@@ -102,7 +102,7 @@ class EasyServe
       end
     end
 
-    passive_clients.each do |pid|
+    passive_children.each do |pid|
       log.debug {"stopping client pid=#{pid}"}
       Process.kill("TERM", pid)
       begin
@@ -266,7 +266,7 @@ class EasyServe
       yield(*conns) if block_given?
       no_interrupt_if_interactive
     end
-    (passive ? passive_clients : clients) << c
+    (passive ? passive_children : children) << c
     c
   end
   
