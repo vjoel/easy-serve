@@ -10,7 +10,7 @@ class RemoteRunScript
   
   def run
     conn = conns[0]
-    log.progname = "run remote on #{host}"
+    log.progname = "run remote on #{host} with args #{args}"
     log.info "trying to read from #{conn.inspect}"
     log.info "received: #{conn.read}"
     conn.write "hello from #{log.progname}"

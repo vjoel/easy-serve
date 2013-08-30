@@ -49,5 +49,5 @@ EasyServe.start do |ez|
     file: "remote-run-script.rb",
       # 'file' passed to load, so can be rel to dir or ruby's $LOAD_PATH
     class_name: "RemoteRunScript",
-    args: []
+    args: ["foo", "bar", 1, 2, 3]
 end
