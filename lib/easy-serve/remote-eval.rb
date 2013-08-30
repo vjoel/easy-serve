@@ -5,8 +5,6 @@ class EasyServe
   # can be hard to debug -- use _run instead. Returns pid of child managing
   # the ssh connection.
   def remote_eval *server_names, host: nil, passive: false, **opts
-    ## remote logfile option?
-
     child_pid = fork do
       log.progname = "remote_eval #{host}"
 
@@ -32,7 +30,8 @@ class EasyServe
             servers_list: servers_list,
             log_level:    log.level,
             eval_string:  opts[:eval],
-            host:         host
+            host:         host,
+            log:          opts[:log]
           },
           ssh)
 

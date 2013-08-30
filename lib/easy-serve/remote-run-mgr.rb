@@ -17,7 +17,18 @@ def manage_remote_run_client msg
   Dir.chdir(dir) if dir
   load file
 
-  EasyServe.start servers: servers do |ez|
+  log_args = msg["log"]
+  log =
+    case log_args
+    when Array
+      Logger.new(*log_args)
+    when true, :default
+      EasyServe.default_logger
+    when nil, false
+      EasyServe.null_logger
+    end
+
+  EasyServe.start servers: servers, log: log do |ez|
     log = ez.log
     log.level = log_level
     log.formatter = nil if $VERBOSE

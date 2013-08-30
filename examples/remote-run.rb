@@ -49,5 +49,9 @@ EasyServe.start do |ez|
     file: "remote-run-script.rb",
       # 'file' passed to load, so can be rel to dir or ruby's $LOAD_PATH
     class_name: "RemoteRunScript",
-    args: ["foo", "bar", 1, 2, 3]
+    args: ["foo", "bar", 1, 2, 3],
+    log: true # use the default logger, sending log messages back to local
+    #log: false # don't log
+    #log: ["remote-run.log", "weekly"]
+      # log to a file with rotation (like Logger.new(...) )
 end

@@ -16,8 +16,19 @@ def manage_remote_eval_client msg
   servers_list.each do |name, pid, addr|
     servers[name] = EasyServe::Server.new(name, pid, addr)
   end
+  
+  log_args = msg["log"]
+  log =
+    case log_args
+    when Array
+      Logger.new(*log_args)
+    when true
+      EasyServe.default_logger
+    when nil, false
+      EasyServe.null_logger
+    end
 
-  EasyServe.start servers: servers do |ez|
+  EasyServe.start servers: servers, log: log do |ez|
     log = ez.log
     log.level = log_level
     log.formatter = nil if $VERBOSE
