@@ -259,7 +259,7 @@ class EasyServe
   end
 
   # A passive client may be stopped after all active clients exit.
-  def client *server_names, passive: false
+  def client *server_names, passive: false ## s/client/child/
     c = fork do
       conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
       yield(*conns) if block_given?

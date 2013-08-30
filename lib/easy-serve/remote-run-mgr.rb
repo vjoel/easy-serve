@@ -1,29 +1,31 @@
 require 'msgpack'
 require 'easy-serve'
 
-class EasyServe
-  def binding_for_remote_eval conns, host, log
-    binding
-  end
-end
-
-def manage_remote_eval_client msg
-  server_names, servers_list, log_level, eval_string, host =
-    msg.values_at(*%w{server_names servers_list log_level eval_string host})
+def manage_remote_run_client msg
+  server_names, servers_list, log_level, host, dir, file, class_name, args =
+    msg.values_at(*%w{
+      server_names servers_list log_level host
+      dir file class_name args
+    })
 
   servers = {}
   servers_list.each do |name, pid, addr|
     servers[name] = EasyServe::Server.new(name, pid, addr)
   end
+  
+  Dir.chdir(dir) if dir
+  load file
 
   EasyServe.start servers: servers do |ez|
     log = ez.log
     log.level = log_level
-    log.formatter = nil if $VERBOSE ## pass verbose over ssh?
+    log.formatter = nil if $VERBOSE
 
     ez.local *server_names do |*conns|
       begin
-        eval eval_string, ez.binding_for_remote_eval(conns, host, log)
+        cl = Object.const_get(class_name)
+        ro = cl.new(conns, host, log, *args)
+        ro.run
       rescue => ex
         puts "ez error", ex, ex.backtrace
       end
@@ -42,7 +44,7 @@ begin
   unpacker.each do |msg|
     case
     when msg["server_names"]
-      Thread.new {manage_remote_eval_client(msg); exit}
+      Thread.new {manage_remote_run_client(msg); exit}
     when msg["exit"]
       puts "exiting"
       exit
