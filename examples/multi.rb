@@ -26,7 +26,7 @@ EasyServe.start servers_file: servers_file do |ez|
     end
   end
   
-  ez.client "simple-server" do |conn|
+  ez.child "simple-server" do |conn|
     log.progname = "client with pid=#$$"
     log.info conn.read
     conn.write "hello from #{log.progname}"

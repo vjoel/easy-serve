@@ -20,7 +20,7 @@ EasyServe.start do |ez|
     end
   end
   
-  ez.client "simple-server" do |conn|
+  ez.child "simple-server" do |conn|
     log.progname = "client 1"
     log.info conn.read
     conn.write "hello from #{log.progname}"

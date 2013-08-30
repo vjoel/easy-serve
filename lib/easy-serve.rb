@@ -259,8 +259,8 @@ class EasyServe
     end
   end
 
-  # A passive client may be stopped after all active clients exit.
-  def client *server_names, passive: false ## s/client/child/
+  # A passive client child may be stopped after all active clients exit.
+  def child *server_names, passive: false
     c = fork do
       conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
       yield(*conns) if block_given?
@@ -268,6 +268,11 @@ class EasyServe
     end
     (passive ? passive_clients : clients) << c
     c
+  end
+  
+  def client *args, &block
+    warn "EasyServe#client is deprecated; use #child"
+    child *args, &block
   end
   
   def local *server_names

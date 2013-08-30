@@ -21,7 +21,7 @@ EasyServe.start do |ez|
     end
   end
   
-  ez.client "simple-server", passive: true do |conn|
+  ez.child "simple-server", passive: true do |conn|
     log.progname = "client 1"
     log.info conn.read
     conn.write "hello from #{log.progname}, pid = #$$; sleeping..."
@@ -31,7 +31,7 @@ EasyServe.start do |ez|
   
   sleep 0.1
   
-  ez.client "simple-server" do |conn|
+  ez.child "simple-server" do |conn|
     log.progname = "client 2"
     log.info conn.read
     conn.write "hello from #{log.progname}, pid = #$$"
