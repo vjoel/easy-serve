@@ -58,6 +58,7 @@ class EasyServe
     @clients = [] # pid
     @passive_clients = [] # pid
     @owner = false
+    @tmpdir = nil
     @servers = opts[:servers] # name => Server
     
     unless servers
