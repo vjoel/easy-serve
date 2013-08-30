@@ -58,10 +58,11 @@ begin
     when msg["exit"]
       puts "exiting"
       exit
+    when msg["request"]
+      response = self.send(*msg["command"])
+      puts "response: #{response.inspect}"
     else
-      p msg # testing
-      ## It would be nice to expose this case to users of EasyServe for
-      ## custom messaging over the ssh connection.
+      puts "unhandled: #{msg.inspect}"
     end
   end
   
