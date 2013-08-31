@@ -51,7 +51,7 @@ end
 
 $stdout.sync = true
 
-begin
+def handle_remote_run_messages
   unpacker = MessagePack::Unpacker.new($stdin)
   unpacker.each do |msg|
     case
@@ -67,7 +67,7 @@ begin
       puts "unhandled: #{msg.inspect}"
     end
   end
-  
+
 rescue => ex
   puts "ez error", ex, ex.backtrace
 end

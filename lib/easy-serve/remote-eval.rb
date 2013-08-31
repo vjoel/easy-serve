@@ -16,7 +16,10 @@ class EasyServe
     child_pid = fork do
       log.progname = "remote_eval #{host}"
 
-      IO.popen ["ssh", host, "ruby", "-r", "easy-serve/remote-eval-mgr"],
+      IO.popen [
+        "ssh", host, "ruby",
+        "-r", "easy-serve/remote-eval-mgr",
+        "-e", "handle_remote_eval_messages"],
                "w+" do |ssh|
         ssh.sync = true
 
