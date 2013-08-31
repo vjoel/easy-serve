@@ -8,17 +8,8 @@ class EasyServe
     child_pid = fork do
       log.progname = "remote_eval #{host}"
 
-      old_term = nil
-
       IO.popen ["ssh", host, "ruby", "-r", "easy-serve/remote-eval-mgr"],
                "w+" do |ssh|
-        old_term = trap "TERM" do
-          MessagePack.pack({exit: true}, ssh)
-          #ssh.close_write ##?
-          sleep 0.5 ## maybe wait for "exited" ack instead?
-          Process.kill "TERM", ssh.pid
-          exit
-        end
         ssh.sync = true
 
         servers_list = servers.map {|n, s| [s.name, s.pid, s.addr]}
@@ -49,8 +40,6 @@ class EasyServe
           end
         end
       end
-
-      trap "TERM", old_term
     end
 
     (passive ? passive_children : children) << child_pid
