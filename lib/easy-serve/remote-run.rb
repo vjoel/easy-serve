@@ -3,6 +3,14 @@ require 'msgpack'
 class EasyServe
   # useful in production, though it requires remote lib files to be set up.
   # Returns pid of child managing the ssh connection.
+  #
+  # Note, unlike #local and #child, by default logging goes to the null logger.
+  # If you want too see logs from the remote, you need to choose:
+  #
+  # 1. Log to remote file: pass log: [args...] with args as in Logger.new
+  #
+  # 2. Log back over ssh: pass log: true.
+  #
   def remote_run *server_names, host: nil, passive: false, **opts
     child_pid = fork do
       log.progname = "remote_run #{host}"

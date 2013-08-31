@@ -53,5 +53,5 @@ EasyServe.start do |ez|
     log: true # use the default logger, sending log messages back to local
     #log: false # don't log
     #log: ["remote-run.log", "weekly"]
-      # log to a file with rotation (like Logger.new(...) )
+      # log to a remote file with rotation (like Logger.new(...) )
 end

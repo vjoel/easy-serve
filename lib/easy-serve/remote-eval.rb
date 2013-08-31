@@ -4,6 +4,14 @@ class EasyServe
   # useful simple cases in testing and in production, but long eval strings
   # can be hard to debug -- use _run instead. Returns pid of child managing
   # the ssh connection.
+  #
+  # Note, unlike #local and #child, by default logging goes to the null logger.
+  # If you want too see logs from the remote, you need to choose:
+  #
+  # 1. Log to remote file: pass log: [args...] with args as in Logger.new
+  #
+  # 2. Log back over ssh: pass log: true.
+  #
   def remote_eval *server_names, host: nil, passive: false, **opts
     child_pid = fork do
       log.progname = "remote_eval #{host}"

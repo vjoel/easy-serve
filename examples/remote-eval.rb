@@ -40,7 +40,7 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there, eval: %{
+  ez.remote "simple-server", host: addr_there, log: true, eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
     log.progname = "eval remote on \#{host}"

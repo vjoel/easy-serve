@@ -40,7 +40,8 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there, passive: true, eval: %{
+  ez.remote "simple-server", host: addr_there, log: true, passive: true,
+    eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
     log.progname = "eval remote 1 (passive) on \#{host}"
@@ -59,9 +60,9 @@ EasyServe.start do |ez|
       # quickly, this client might never get a chance to run.
   }
   
-  # sleep 1 # Use this to ensure (for testing) that the above client runs.
+  sleep 1 # Ensure (for testing) that the above client runs.
   
-  ez.remote "simple-server", host: addr_there, eval: %{
+  ez.remote "simple-server", host: addr_there, log: true, eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
     log.progname = "eval remote 2 on \#{host}"
