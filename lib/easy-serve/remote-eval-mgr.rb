@@ -41,7 +41,7 @@ def manage_remote_eval_client msg
       end
     end
     
-    puts "done"
+    log.info "done"
   end
 rescue => ex
   puts "ez error", ex, ex.backtrace

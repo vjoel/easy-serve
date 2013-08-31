@@ -34,17 +34,12 @@ class EasyServe
           },
           ssh)
 
-        result = ssh.gets
-
-        if result
-          error = result[/ez error/]
-          if error
+        while s = ssh.gets
+          case s
+          when /^ez error/
             raise RemoteError, "error raised in remote: #{ssh.read}"
           else
-            log.debug "from remote: #{result}"
-            while s = ssh.gets
-              log.debug "from remote: #{s}" ## ?
-            end
+            puts s
           end
         end
       end
