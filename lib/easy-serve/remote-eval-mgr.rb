@@ -1,12 +1,6 @@
 require 'msgpack'
 require 'easy-serve'
 
-class EasyServe
-  def binding_for_remote_eval conns, host, log
-    binding
-  end
-end
-
 def manage_remote_eval_client msg
   $VERBOSE = msg["verbose"]
   server_names, servers_list, log_level, eval_string, host =
@@ -35,7 +29,8 @@ def manage_remote_eval_client msg
 
     ez.local *server_names do |*conns|
       begin
-        eval eval_string, ez.binding_for_remote_eval(conns, host, log)
+        pr = eval "proc do |conns, host, log| #{eval_string}; end"
+        pr[conns, host, log]
       rescue => ex
         puts "ez error", ex, ex.backtrace
       end
