@@ -16,10 +16,12 @@ class EasyServe
       log.progname = "remote_run #{host}"
 
       IO.popen [
-        "ssh", host, "ruby",
-        "-r", "easy-serve/remote-run-mgr",
-        "-e", "handle_remote_run_messages"],
-               "w+" do |ssh|
+          "ssh", host, "ruby",
+          "-r", "easy-serve/remote-run-mgr",
+          "-e", "handle_remote_run_messages"
+        ],
+        "w+" do |ssh|
+
         ssh.sync = true
 
         servers_list = servers.map {|n, s| [s.name, s.pid, s.addr]}

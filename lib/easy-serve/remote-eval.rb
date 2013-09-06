@@ -17,14 +17,15 @@ class EasyServe
       log.progname = "remote_eval #{host}"
 
       IO.popen [
-        "ssh", host, "ruby",
-        "-r", "easy-serve/remote-eval-mgr",
-        "-e", "handle_remote_eval_messages"],
-               "w+" do |ssh|
+          "ssh", host, "ruby",
+          "-r", "easy-serve/remote-eval-mgr",
+          "-e", "handle_remote_eval_messages"
+        ],
+        "w+" do |ssh|
+
         ssh.sync = true
 
         servers_list = servers.map {|n, s| [s.name, s.pid, s.addr]}
-
         MessagePack.pack(
           {
             verbose:      $VERBOSE,
