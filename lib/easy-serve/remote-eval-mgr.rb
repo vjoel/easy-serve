@@ -38,7 +38,7 @@ def manage_remote_eval_client msg
     
     log.info "done"
   end
-rescue => ex
+rescue LoadError, ScriptError, StandardError => ex
   puts "ez error", ex, ex.backtrace
 end
 
