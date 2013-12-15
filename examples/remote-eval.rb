@@ -17,7 +17,7 @@ unless addr_there
 
     If --tunnel is specified, use the ssh connection to tunnel the tupelo
     traffic. Otherwise, just use tcp. (Always use ssh to start the remote
-    process.
+    process.)
 
   END
 end
