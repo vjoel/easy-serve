@@ -1,11 +1,12 @@
 require 'easy-serve/remote'
 
+tunnel = ARGV.delete("--tunnel")
 addr_there = ARGV.shift
 
 unless addr_there
   abort <<-END
 
-    Usage: #$0 addr_there
+    Usage: #$0 addr_there [--tunnel]
 
     The 'addr_there' is the remote address on which client code will run.
     It must be a destination accepted by ssh, optionally including a user name:
@@ -13,6 +14,10 @@ unless addr_there
       [user@]hostname
     
     The 'hostname' may by any valid hostname or ssh alias.
+
+    If --tunnel is specified, use the ssh connection to tunnel the tupelo
+    traffic. Otherwise, just use tcp. (Always use ssh to start the remote
+    process.
 
     Note: you must set up the remote by doing
     
@@ -27,7 +32,8 @@ EasyServe.start do |ez|
   log.formatter = nil if $VERBOSE
 
   ez.start_servers do
-    ez.server "simple-server", :tcp, nil, 0 do |svr|
+    host = tunnel ? "localhost" : nil # no need to expose port if tunnelled
+    ez.server "simple-server", :tcp, host, 0 do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -44,7 +50,7 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there,
+  ez.remote "simple-server", host: addr_there, tunnel: tunnel,
     dir: "/tmp",
     file: "remote-run-script.rb",
       # 'file' passed to load, so can be rel to dir or ruby's $LOAD_PATH

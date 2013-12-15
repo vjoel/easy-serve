@@ -12,7 +12,8 @@ class EasyServe
   #
   # 2. Log back over ssh: pass log: true.
   #
-  def remote_eval *server_names, host: nil, passive: false, **opts
+  def remote_eval *server_names,
+                  host: nil, passive: false, tunnel: false, **opts
     child_pid = fork do
       log.progname = "remote_eval #{host}"
 
@@ -25,7 +26,17 @@ class EasyServe
 
         ssh.sync = true
 
-        servers_list = servers.map {|n, s| [s.name, s.pid, s.addr]}
+        if tunnel and host != "localhost" and host != "127.0.0.1"
+          servers_list = servers.map do |n, s|
+            _, local_port = s.addr
+            out = `ssh -R 0:localhost:#{local_port} -O forward #{host}`
+            remote_port = Integer(out)
+            [s.name, s.pid, ["localhost", remote_port]]
+          end
+        else
+          servers_list = servers.map {|n, s| [s.name, s.pid, s.addr]}
+        end
+
         MessagePack.pack(
           {
             verbose:      $VERBOSE,
