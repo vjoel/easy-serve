@@ -62,18 +62,18 @@ EasyServe.start do |ez|
           Thread.new(svr.accept) do |conn|
             begin
               log.info "accepted connection from #{conn.inspect}"
-              sum = 1
+              prod = 1
               while input = conn.gets and not input.empty?
                 log.info "read input: #{input.inspect}"
                 begin
-                  sum *= Integer(input)
+                  prod *= Integer(input)
                 rescue
                   log.error "bad input: #{input}"
                   raise
                 end
               end
-              conn.puts sum
-              log.info "wrote sum: #{sum}"
+              conn.puts prod
+              log.info "wrote product: #{prod}"
             ensure
               conn.close
             end
