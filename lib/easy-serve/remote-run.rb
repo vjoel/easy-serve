@@ -18,7 +18,7 @@ class EasyServe
       IO.popen [
           "ssh", host, "ruby",
           "-r", "easy-serve/remote-run-mgr",
-          "-e", "handle_remote_run_messages"
+          "-e", "EasyServe.handle_remote_run_messages"
         ],
         "w+" do |ssh|
 

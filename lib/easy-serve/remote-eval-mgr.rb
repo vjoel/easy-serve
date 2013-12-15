@@ -1,7 +1,7 @@
 require 'msgpack'
 require 'easy-serve'
 
-def manage_remote_eval_client msg
+def EasyServe.manage_remote_eval_client msg
   $VERBOSE = msg["verbose"]
   server_names, servers_list, log_level, eval_string, host =
     msg.values_at(*%w{server_names servers_list log_level eval_string host})
@@ -44,7 +44,7 @@ end
 
 $stdout.sync = true
 
-def handle_remote_eval_messages
+def EasyServe.handle_remote_eval_messages
   unpacker = MessagePack::Unpacker.new($stdin)
   unpacker.each do |msg|
     case
