@@ -29,8 +29,16 @@ class EasyServe
         if tunnel and host != "localhost" and host != "127.0.0.1"
           servers_list = servers.map do |n, s|
             _, local_port = s.addr
-            out = `ssh -R 0:localhost:#{local_port} -O forward #{host}`
-            remote_port = Integer(out)
+            fwd = "0:localhost:#{local_port}"
+            out = `ssh -O forward -R #{fwd} #{host}`
+            begin
+              remote_port = Integer(out)
+            rescue
+              log.error "Unable to set up dynamic ssh port forwarding. " +
+                "Please check if ssh -v is at least 6.0."
+              raise
+            end
+            at_exit {system "ssh -O cancel -R #{fwd} #{host}"}
             [s.name, s.pid, ["localhost", remote_port]]
           end
         else
