@@ -14,6 +14,7 @@ def EasyServe.manage_remote_run_client msg
     servers[name] = EasyServe::Server.new(name, pid, addr)
   end
   
+### opt for tmpdir and send files to it via ssh
   Dir.chdir(dir) if dir
   load file
 
