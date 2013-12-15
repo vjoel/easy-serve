@@ -6,7 +6,7 @@ class EasyServe
   # the ssh connection.
   #
   # Note, unlike #local and #child, by default logging goes to the null logger.
-  # If you want too see logs from the remote, you need to choose:
+  # If you want to see logs from the remote, you need to choose:
   #
   # 1. Log to remote file: pass log: [args...] with args as in Logger.new
   #
