@@ -15,7 +15,7 @@ unless address_there
     
     The 'hostname' may by any valid hostname or ssh alias.
 
-    If --tunnel is specified, use the ssh connection to tunnel the tupelo
+    If --tunnel is specified, use the ssh connection to tunnel the data
     traffic. Otherwise, just use tcp. (Always use ssh to start the remote
     process.)
 
