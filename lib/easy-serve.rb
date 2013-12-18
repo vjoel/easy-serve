@@ -6,7 +6,7 @@ require 'fileutils'
 require 'easy-serve/service'
 
 class EasyServe
-  VERSION = "0.7"
+  VERSION = "0.8"
   
   class EasyFormatter < Logger::Formatter
     Format = "%s: %s: %s\n"
