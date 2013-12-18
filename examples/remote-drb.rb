@@ -23,8 +23,8 @@ EasyServe.start do |ez|
   log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
-    ez.server "simple-server", :tcp, nil, 0 do |svr|
+  ez.start_services do
+    ez.service "simple-service", :tcp do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -41,7 +41,7 @@ EasyServe.start do |ez|
     end
   end
   
-  ez.remote "simple-server", host: addr_there do |conn|
+  ez.remote "simple-service", host: addr_there do |conn|
     # this block runs locally, but calls methods on the remote using drb
     log.progname = "druby remote on #{addr_there}"
     log.info "trying to read from #{conn.inspect}"

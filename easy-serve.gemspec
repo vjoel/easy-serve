@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0")
   s.authors = ["Joel VanderWerf"]
   s.date = Time.now.strftime "%Y-%m-%d"
-  s.description = "Framework for starting tcp/unix servers and connected clients under one parent process and on remote hosts."
+  s.description = "Framework for starting tcp/unix services and connected clients under one parent process and on remote hosts."
   s.email = "vjoel@users.sourceforge.net"
   s.extra_rdoc_files = ["README.md", "COPYING"]
   s.files = Dir[
@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
     "--quiet", "--line-numbers", "--inline-source",
     "--title", "easy-serve", "--main", "README.md"]
   s.require_paths = ["lib"]
-  s.summary = "Framework for starting tcp/unix servers and connected clients under one parent process and on remote hosts"
+  s.summary = "Framework for starting tcp/unix services and connected clients under one parent process and on remote hosts"
 
   s.add_dependency 'msgpack'
 end

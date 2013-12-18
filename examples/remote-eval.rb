@@ -27,9 +27,9 @@ EasyServe.start do |ez|
   log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
+  ez.start_services do
     host = tunnel ? "localhost" : nil # no need to expose port if tunnelled
-    ez.server "simple-server", :tcp, host, 0 do |svr|
+    ez.service "simple-service", :tcp, bind_host: host do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -46,7 +46,7 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there, tunnel: tunnel, log: true,
+  ez.remote "simple-service", host: addr_there, tunnel: tunnel, log: true,
     eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb

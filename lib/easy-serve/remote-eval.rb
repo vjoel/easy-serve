@@ -1,5 +1,5 @@
 require 'msgpack'
-require 'easy-serve/accessible-servers'
+require 'easy-serve/accessible-services'
 
 class EasyServe
   # useful simple cases in testing and in production, but long eval strings
@@ -13,7 +13,7 @@ class EasyServe
   #
   # 2. Log back over ssh: pass log: true.
   #
-  def remote_eval *server_names,
+  def remote_eval *service_names,
                   host: nil, passive: false, tunnel: false, **opts
     child_pid = fork do
       log.progname = "remote_eval #{host}"
@@ -26,17 +26,17 @@ class EasyServe
         "w+" do |ssh|
 
         ssh.sync = true
-        servers_list = accessible_servers(host, tunnel: tunnel)
+        services_list = accessible_services(host, tunnel: tunnel)
 
         MessagePack.pack(
           {
-            verbose:      $VERBOSE,
-            server_names: server_names,
-            servers_list: servers_list,
-            log_level:    log.level,
-            eval_string:  opts[:eval],
-            host:         host,
-            log:          opts[:log]
+            verbose:        $VERBOSE,
+            service_names:  Marshal.dump(service_names),
+            services_list:  Marshal.dump(services_list),
+            log_level:      log.level,
+            eval_string:    opts[:eval],
+            host:           host,
+            log:            opts[:log]
           },
           ssh)
 

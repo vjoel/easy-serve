@@ -31,9 +31,9 @@ EasyServe.start do |ez|
   log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
+  ez.start_services do
     host = tunnel ? "localhost" : nil # no need to expose port if tunnelled
-    ez.server "simple-server", :tcp, host, 0 do |svr|
+    ez.service "simple-service", :tcp, bind_host: host do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -50,7 +50,7 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there, tunnel: tunnel,
+  ez.remote "simple-service", host: addr_there, tunnel: tunnel,
     dir: "/tmp",
     file: "remote-run-script.rb",
       # 'file' passed to load, so can be rel to dir or ruby's $LOAD_PATH

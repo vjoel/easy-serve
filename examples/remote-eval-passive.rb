@@ -22,8 +22,8 @@ EasyServe.start do |ez|
   log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
-    ez.server "simple-server", :tcp, nil, 0 do |svr|
+  ez.start_services do
+    ez.service "simple-service", :tcp do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -40,7 +40,7 @@ EasyServe.start do |ez|
     end
   end
 
-  ez.remote "simple-server", host: addr_there, log: true, passive: true,
+  ez.remote "simple-service", host: addr_there, log: true, passive: true,
     eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
@@ -52,17 +52,17 @@ EasyServe.start do |ez|
     
     sleep
       # Without passive, this sleep would prevent the distributed app from
-      # exiting -- the simple-server above could not be safely stopped, since
+      # exiting -- the simple-service above could not be safely stopped, since
       # there's no guarantee that it is no longer needed. The passive
       # declaration make it clear that this process can be stopped after all
-      # non-passive clients have finished, and then the server can be stopped.
+      # non-passive clients have finished, and then the service can be stopped.
       # Of course, this also means that if all other clients execute very
       # quickly, this client might never get a chance to run.
   }
   
   sleep 1 # Ensure (for testing) that the above client runs.
   
-  ez.remote "simple-server", host: addr_there, log: true, eval: %{
+  ez.remote "simple-service", host: addr_there, log: true, eval: %{
     conn = conns[0]
     # this code is executed on the remote host, connected by conn, not drb
     log.progname = "eval remote 2 on \#{host}"

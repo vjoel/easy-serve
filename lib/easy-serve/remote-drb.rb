@@ -6,7 +6,7 @@ class EasyServe
   # It's up to you to start another thread inside the code block if you
   # want more concurrency. This is for convenience when testing (cases in which
   # concurrency needs to be controlled explicitly).
-  def remote_drb *server_names, host: nil
+  def remote_drb *service_names, host: nil
     ## remote logfile option?
 
     DRb.start_service("druby://#{host_name}:0", nil)
@@ -24,17 +24,17 @@ class EasyServe
           require 'yaml'
           require 'easy-serve'
           
-          server_names = #{server_names.inspect}
-          servers = YAML.load(#{YAML.dump(servers).inspect})
+          service_names = #{service_names.inspect}
+          services = YAML.load(#{YAML.dump(services).inspect})
           log_level = #{log.level}
           host_uri = #{host_uri.inspect}
           
-          EasyServe.start servers: servers do |ez|
+          EasyServe.start services: services do |ez|
             log = ez.log
             log.level = log_level
             log.formatter = nil if $VERBOSE
 
-            ez.local *server_names do |*conns|
+            ez.local *service_names do |*conns|
               begin
                 DRb.start_service(host_uri, {conns: conns})
                 puts DRb.uri

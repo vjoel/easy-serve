@@ -3,12 +3,14 @@ require 'easy-serve'
 
 def EasyServe.manage_remote_eval_client msg
   $VERBOSE = msg["verbose"]
-  server_names, servers_list, log_level, eval_string, host =
-    msg.values_at(*%w{server_names servers_list log_level eval_string host})
+  service_names, services_list, log_level, eval_string, host =
+    msg.values_at(*%w{service_names services_list log_level eval_string host})
 
-  servers = {}
-  servers_list.each do |name, pid, addr|
-    servers[name] = EasyServe::Server.new(name, pid, addr)
+  services = {}
+  service_names = Marshal.load(service_names)
+  services_list = Marshal.load(services_list)
+  services_list.each do |service|
+    services[service.name] = service
   end
   
   log_args = msg["log"]
@@ -22,12 +24,12 @@ def EasyServe.manage_remote_eval_client msg
       EasyServe.null_logger
     end
 
-  EasyServe.start servers: servers, log: log do |ez|
+  EasyServe.start services: services, log: log do |ez|
     log = ez.log
     log.level = log_level
     log.formatter = nil if $VERBOSE
 
-    ez.local *server_names do |*conns|
+    ez.local *service_names do |*conns|
       begin
         pr = eval "proc do |conns, host, log| #{eval_string}; end"
         pr[conns, host, log]
@@ -48,7 +50,7 @@ def EasyServe.handle_remote_eval_messages
   unpacker = MessagePack::Unpacker.new($stdin)
   unpacker.each do |msg|
     case
-    when msg["server_names"]
+    when msg["service_names"]
       Thread.new {manage_remote_eval_client(msg); exit}
     when msg["exit"]
       puts "exiting"

@@ -1,5 +1,5 @@
 require 'msgpack'
-require 'easy-serve/accessible-servers'
+require 'easy-serve/accessible-services'
 
 class EasyServe
   # useful in production, though it requires remote lib files to be set up.
@@ -12,7 +12,7 @@ class EasyServe
   #
   # 2. Log back over ssh: pass log: true.
   #
-  def remote_run *server_names, host: nil, passive: false, tunnel: false, **opts
+  def remote_run *service_names, host: nil, passive: false, tunnel: false, **opts
     child_pid = fork do
       log.progname = "remote_run #{host}"
 
@@ -24,20 +24,20 @@ class EasyServe
         "w+" do |ssh|
 
         ssh.sync = true
-        servers_list = accessible_servers(host, tunnel: tunnel)
+        services_list = accessible_services(host, tunnel: tunnel)
 
         MessagePack.pack(
           {
-            verbose:      $VERBOSE,
-            server_names: server_names,
-            servers_list: servers_list,
-            log_level:    log.level,
-            host:         host,
-            dir:          opts[:dir],
-            file:         opts[:file],
-            class_name:   opts[:class_name],
-            args:         opts[:args],
-            log:          opts[:log]
+            verbose:        $VERBOSE,
+            service_names:  Marshal.dump(service_names),
+            services_list:  Marshal.dump(services_list),
+            log_level:      log.level,
+            host:           host,
+            dir:            opts[:dir],
+            file:           opts[:file],
+            class_name:     opts[:class_name],
+            args:           opts[:args],
+            log:            opts[:log]
           },
           ssh)
 

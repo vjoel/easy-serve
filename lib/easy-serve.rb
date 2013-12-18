@@ -3,16 +3,10 @@ require 'socket'
 require 'yaml'
 require 'fileutils'
 
+require 'easy-serve/service'
+
 class EasyServe
   VERSION = "0.7"
-
-  class Server
-    attr_reader :name, :pid, :addr
-    
-    def initialize name, pid, addr
-      @name, @pid, @addr = name, pid, addr
-    end
-  end
   
   class EasyFormatter < Logger::Formatter
     Format = "%s: %s: %s\n"
@@ -35,10 +29,10 @@ class EasyServe
   end
 
   attr_accessor :log
-  attr_accessor :servers
+  attr_accessor :services
   attr_reader :children
   attr_reader :passive_children
-  attr_reader :servers_file
+  attr_reader :services_file
   attr_reader :interactive
   
   def self.start(log: default_logger, **opts)
@@ -52,37 +46,37 @@ class EasyServe
   end
 
   def initialize **opts
-    @servers_file = opts[:servers_file]
+    @services_file = opts[:services_file]
     @interactive = opts[:interactive]
     @log = opts[:log] || self.class.null_logger
     @children = [] # pid
     @passive_children = [] # pid
     @owner = false
     @tmpdir = nil
-    @servers = opts[:servers] # name => Server
+    @services = opts[:services] # name => service
     
-    unless servers
-      if servers_file
-        @servers =
+    unless services
+      if services_file
+        @services =
           begin
-            load_server_table
+            load_service_table
           rescue Errno::ENOENT
-            init_server_table
+            init_service_table
           end
       else
-        init_server_table
+        init_service_table
       end
     end
   end
 
-  def load_server_table
-    File.open(servers_file) do |f|
+  def load_service_table
+    File.open(services_file) do |f|
       YAML.load(f)
     end
   end
   
-  def init_server_table
-    @servers ||= begin
+  def init_service_table
+    @services ||= begin
       @owner = true
       {}
     end
@@ -113,20 +107,16 @@ class EasyServe
     end
     
     if @owner
-      servers.each do |name, server|
+      services.each do |name, service|
         log.info "stopping #{name}"
-        Process.kill "TERM", server.pid
-        Process.waitpid server.pid
-        if server.addr.kind_of? String
-          FileUtils.remove_entry server.addr
-        end
+        service.cleanup
       end
 
-      if servers_file
+      if services_file
         begin
-          FileUtils.rm servers_file
+          FileUtils.rm services_file
         rescue Errno::ENOENT
-          log.warn "servers file at #{servers_file.inspect} was deleted already"
+          log.warn "services file #{services_file.inspect} was deleted already"
         end
       end
     end
@@ -134,14 +124,14 @@ class EasyServe
     clean_tmpdir
   end
   
-  def start_servers
+  def start_services
     if @owner
-      log.debug {"starting servers"}
+      log.debug {"starting services"}
       yield
 
-      if servers_file
-        File.open(servers_file, "w") do |f|
-          YAML.dump(servers, f)
+      if services_file
+        File.open(services_file, "w") do |f|
+          YAML.dump(services, f)
         end
       end
     end
@@ -166,7 +156,7 @@ class EasyServe
     end
   end
 
-  def inc_socket_filename name
+  def self.bump_socket_filename name
     name =~ /-\d+\z/ ? name.succ : name + "-0"
   end
   
@@ -186,83 +176,48 @@ class EasyServe
     end
   end
   
-  def server name, proto = :unix, host = nil, port = nil
-    server_class, *server_addr =
-      case proto
-      when /unix/i; [UNIXServer, choose_socket_filename(name, base: host)]
-      when /tcp/i;  [TCPServer, host || host_name, port || 0]
-      else raise ArgumentError, "Unknown socket protocol: #{proto.inspect}"
-      end
+  MAX_TRIES = 10
 
+  def service name, proto = :unix, **opts
+    case proto
+    when :unix
+      opts[:path] ||= choose_socket_filename(name, base: opts[:base])
+
+    when :tcp
+      opts[:connect_host] ||=
+        case opts[:bind_host]
+        when nil, "0.0.0.0", /\A<any>\z/i
+          host_name ## maybe local connectors should use "localhost" ?
+        when "localhost", "127.0.0.1"
+          "localhost"
+        end
+    end
+
+    service = Service.for(name, proto, **opts)
     rd, wr = IO.pipe
-
     pid = fork do
       rd.close
       log.progname = name
       log.info "starting"
-
-      svr = server_for(server_class, *server_addr)
+      
+      svr = service.serve(max_tries: MAX_TRIES, log: log)
       yield svr if block_given?
       no_interrupt_if_interactive
 
-      addr =
-        case proto
-        when /unix/i; svr.addr[1]
-        when /tcp/i; svr.addr(false).values_at(2,1)
-        end
-      Marshal.dump addr, wr
+      Marshal.dump service, wr
       wr.close
       sleep
     end
 
     wr.close
-    addr = Marshal.load rd
+    services[name] = Marshal.load rd
     rd.close
-    servers[name] = Server.new(name, pid, addr)
-  end
-
-  MAX_TRIES = 10
-
-  def server_for server_class, *server_addr
-    tries = 0
-    begin
-      server_class.new(*server_addr)
-    rescue Errno::EADDRINUSE => ex
-      if server_class == UNIXServer
-        if tries < MAX_TRIES
-          tries += 1
-          server_addr[0] = inc_socket_filename(server_addr[0])
-          log.warn {
-            "#{ex} -- trying again at path #{server_addr}, #{tries}/#{MAX_TRIES} times."
-          }
-          retry
-        end
-      elsif server_class == TCPServer
-        port = Integer(server_addr[1])
-        if port and tries < MAX_TRIES
-          tries += 1
-          port += 1
-          server_addr[1] = port
-          log.warn {
-            "#{ex} -- trying again at port #{port}, #{tries}/#{MAX_TRIES} times."
-          }
-          retry
-        end
-      else
-        raise ArgumentError, "unknown server_class: #{server_class.inspect}"
-      end
-      raise
-
-    rescue => ex
-      ex.message << "; addr=#{server_addr.inspect}"
-      raise
-    end
   end
 
   # A passive client child may be stopped after all active clients exit.
-  def child *server_names, passive: false
+  def child *service_names, passive: false
     c = fork do
-      conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
+      conns = service_names.map {|sn| services[sn].connect}
       yield(*conns) if block_given?
       no_interrupt_if_interactive
     end
@@ -275,8 +230,8 @@ class EasyServe
     child *args, &block
   end
   
-  def local *server_names
-    conns = server_names.map {|sn| socket_for(*servers[sn].addr)}
+  def local *service_names
+    conns = service_names.map {|sn| services[sn].connect}
     yield(*conns) if block_given?
   ensure
     conns and conns.each do |conn|
@@ -285,20 +240,8 @@ class EasyServe
     log.info "stopped local client"
   end
   
-  def socket_for *addr
-    socket_class =
-      case addr.size
-      when 1; UNIXSocket
-      else TCPSocket
-      end
-    socket_class.new(*addr)
-  rescue => ex
-    ex.message << "; addr=#{addr.inspect}"
-    raise
-  end
-
   # ^C in the irb session (parent process) should not kill the
-  # server (child process)
+  # service (child process)
   def no_interrupt_if_interactive
     trap("INT") {} if interactive
   end

@@ -27,10 +27,10 @@ EasyServe.start do |ez|
   log.level = Logger::INFO
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
+  ez.start_services do
     host = tunnel ? "localhost" : nil # no need to expose port if tunnelled
 
-    ez.server "adder", :tcp, host, 0 do |svr|
+    ez.service "adder", :tcp, bind_host: host do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -56,7 +56,7 @@ EasyServe.start do |ez|
       end
     end
 
-    ez.server "multiplier", :tcp, host, 0 do |svr|
+    ez.service "multiplier", :tcp, bind_host: host do |svr|
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|

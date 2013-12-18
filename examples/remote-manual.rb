@@ -1,22 +1,22 @@
 require 'easy-serve'
 
-servers_file = ARGV.shift
-unless servers_file
+services_file = ARGV.shift
+unless services_file
   abort <<-END
-    Usage: #$0 servers_file
-    For the client, copy the generated servers_file to the client host, and
+    Usage: #$0 services_file
+    For the client, copy the generated services_file to the client host, and
     run with the same command.
   END
 end
 
-EasyServe.start servers_file: servers_file do |ez|
+EasyServe.start services_file: services_file do |ez|
   log = ez.log
   log.level = Logger::DEBUG
   log.formatter = nil if $VERBOSE
 
-  ez.start_servers do
-    ez.server "simple-server", :tcp, '0.0.0.0', 0 do |svr|
-      log.debug {"starting server"}
+  ez.start_services do
+    ez.service "simple-service", :tcp do |svr|
+      log.debug {"starting service"}
       Thread.new do
         loop do
           Thread.new(svr.accept) do |conn|
@@ -30,7 +30,7 @@ EasyServe.start servers_file: servers_file do |ez|
     end
   end
   
-  ez.local "simple-server" do |conn|
+  ez.local "simple-service" do |conn|
     log.progname = "parent process"
     log.info conn.read
     conn.write "hello from #{log.progname}"
