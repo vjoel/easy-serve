@@ -178,7 +178,8 @@ class EasyServe
   
   MAX_TRIES = 10
 
-  def service name, proto = :unix, **opts
+  def service name, proto = nil, **opts
+    proto ||= opts.delete(:proto) || :unix
     case proto
     when :unix
       opts[:path] ||= choose_socket_filename(name, base: opts[:base])
