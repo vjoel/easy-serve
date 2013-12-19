@@ -16,17 +16,34 @@ class EasyServe
         end
 
       fwd = "0:#{service_host}:#{service.port}"
-      out = `ssh -O forward -R #{fwd} #{host}`
+      remote_port = nil
+      tries = 10
+      1.times do
+        out = `ssh -O forward -R #{fwd} #{host}`
+        begin
+          remote_port = Integer(out)
+        rescue
+          log.error "Unable to set up dynamic ssh port forwarding. " +
+            "Please check if ssh -v is at least 6.0."
+          raise
+        end
 
-      begin
-        remote_port = Integer(out)
-      rescue
-        log.error "Unable to set up dynamic ssh port forwarding. " +
-          "Please check if ssh -v is at least 6.0."
-        raise
+        if remote_port == 0
+          log.warn "race condition in ssh selection of remote_port"
+          tries -= 1
+          if tries > 0
+            sleep 0.1
+            log.info "retrying ssh selection of remote_port"
+            redo
+          end
+          raise "ssh did not assign remote_port"
+        end
       end
 
-      at_exit {system "ssh -O cancel -R #{fwd} #{host}"}
+      # This breaks with multiple forward requests, and it would be too hard
+      # to coordinate among all requesting processes, so let's leave the
+      # forwarding open:
+      #at_exit {system "ssh -O cancel -R #{fwd} #{host}"}
 
       TCPService.new service.name, connect_host: "localhost", port: remote_port
     end
