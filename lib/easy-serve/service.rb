@@ -2,7 +2,26 @@ class EasyServe
   # Refers to a named service. Use the #serve method to start the service.
   # Encapsulates current location and identity, including pid and address. A
   # Service object can be serialized to a remote process so it can #connect to
-  # the service. 
+  # the service.
+  #
+  # The scheme for referencing hosts is as follows:
+  #
+  #      bind host  |              connect host
+  #                 +------------------------------------------------------
+  #                 |  local           remote TCP            SSH tunnel
+  #      -----------+------------------------------------------------------
+  #
+  #      localhost     'localhost'     X                     'localhost'
+  #
+  #      0.0.0.0       'localhost'     hostname(*)           'localhost'
+  #
+  #      hostname      hostname        hostname              'localhost'(**)
+  #
+  #      * use hostname as best guess, can override; append ".local" if
+  #        hostname not qualified
+  #
+  #      ** forwarding set up to hostname[.local] instead of localhost
+  #
   class Service
     attr_reader :name
     attr_reader :pid
