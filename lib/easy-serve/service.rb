@@ -134,7 +134,7 @@ class EasyServe
     end
 
     def try_serve
-      TCPServer.new(bind_host, port)
+      TCPServer.new(bind_host, port || 0) # new(nil, nil) ==> error
     end
 
     def bump!
