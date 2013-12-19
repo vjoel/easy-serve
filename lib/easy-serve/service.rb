@@ -126,6 +126,7 @@ class EasyServe
         found_addr = svr.addr(false).values_at(2,1)
         log.debug "#{inspect} is listening at #{found_addr.join(":")}"
         @port = found_addr[1]
+        @bind_host ||= found_addr[0]
       end
     end
 
