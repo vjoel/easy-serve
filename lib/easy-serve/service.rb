@@ -156,7 +156,7 @@ class EasyServe
     # connect to a cluster of remote EasyServe processes.
     def tunnelled
       return [self, nil] if
-        ["localhost", "127.0.0.1", EasyServe.host_name].include? connect_host
+        ["localhost", "127.0.0.1", EasyServe.host_name].include? host
 
       if ["localhost", "127.0.0.1", "0.0.0.0"].include? bind_host
         rhost = "localhost"
@@ -171,7 +171,7 @@ class EasyServe
 
       # possible alternative: ssh -f -N -o ExitOnForwardFailure: yes
       cmd = [
-        "ssh", connect_host,
+        "ssh", host,
         "-L", "#{lport}:#{rhost}:#{port}",
         "echo ok && cat"
       ]
