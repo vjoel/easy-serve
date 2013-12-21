@@ -182,7 +182,7 @@ class EasyServe
         raise "Could not start ssh forwarding: #{cmd.join(" ")}"
       end
 
-      service = EasyServe::TCPService.new name,
+      service = TCPService.new name,
         bind_host: bind_host, connect_host: 'localhost', port: lport
 
       return [service, ssh]
