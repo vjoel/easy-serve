@@ -151,9 +151,9 @@ class EasyServe
     # Returns [service, ssh_session|nil]. The service is self and ssh_session is
     # nil, unless tunneling is appropriate, in which case the returned service
     # is the tunnelled one, and the ssh_session is the associated ssh pipe.
-    def tunnelled this_host_name
+    def tunnelled
       return [self, nil] if
-        ["localhost", "127.0.0.1", this_host_name].include? connect_host
+        ["localhost", "127.0.0.1", EasyServe.host_name].include? connect_host
 
       if ["localhost", "127.0.0.1", "0.0.0.0"].include? bind_host
         rhost = "localhost"

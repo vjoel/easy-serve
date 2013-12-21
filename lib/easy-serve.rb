@@ -168,6 +168,10 @@ class EasyServe
   end
   
   def host_name
+    EasyServe.host_name
+  end
+
+  def EasyServe.host_name
     @host_name ||= begin
       hn = Socket.gethostname
       begin
@@ -263,7 +267,7 @@ class EasyServe
 
     tunnelled_services = {}
     services.each do |service_name, service|
-      service, ssh_session = service.tunnelled(host_name)
+      service, ssh_session = service.tunnelled
       tunnelled_services[service_name] = service
       @ssh_sessions << ssh_session if ssh_session # let GC close them
     end
