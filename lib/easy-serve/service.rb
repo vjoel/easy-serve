@@ -120,11 +120,12 @@ class EasyServe
   class TCPService < Service
     SERVICE_CLASS[:tcp] = self
 
-    attr_reader :bind_host, :connect_host, :port
+    attr_reader :bind_host, :connect_host, :host, :port
 
     def initialize name, bind_host: nil, connect_host: nil, port: 0
       super name
       @bind_host, @connect_host, @port = bind_host, connect_host, port
+      @host = EasyServe.host_name
     end
 
     def serve max_tries: 1, log: log
