@@ -7,15 +7,15 @@ class EasyServe
     raise ArgumentError, "no host specified" unless host
 
     if opts[:eval]
-      require 'easy-serve/remote-eval'
+      require 'easy-serve/remote/eval'
       remote_eval(*service_names, host: host, **opts)
 
     elsif opts[:file]
-      require 'easy-serve/remote-run'
+      require 'easy-serve/remote/run'
       remote_run(*service_names, host: host, **opts)
 
     elsif block_given?
-      require 'easy-serve/remote-drb'
+      require 'easy-serve/remote/drb'
       remote_drb(*service_names, host: host, **opts, &Proc.new)
 
     else
