@@ -1,3 +1,5 @@
+require 'easy-serve/service'
+
 class EasyServe::TCPService
   # Returns [service, ssh_session]. The service is modified based on self
   # with tunneling from remote_host and ssh_session is the associated ssh pipe.

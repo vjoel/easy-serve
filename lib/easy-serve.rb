@@ -289,6 +289,8 @@ class EasyServe
   def tunnel_to_remote_services
     return if sibling
 
+    require 'easy-serve/service/tunnelled'
+
     tunnelled_services = {}
     services.each do |service_name, service|
       service, ssh_session = service.tunnelled
