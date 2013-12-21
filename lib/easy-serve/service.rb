@@ -149,9 +149,11 @@ class EasyServe
       @port += 1 unless port == 0 # should not happen
     end
 
-    # Returns [service, ssh_session|nil]. The service is self and ssh_session is
-    # nil, unless tunneling is appropriate, in which case the returned service
-    # is the tunnelled one, and the ssh_session is the associated ssh pipe.
+    # Returns [service, ssh_session|nil]. The service is self and ssh_session
+    # is nil, unless tunneling is appropriate, in which case the returned
+    # service is the tunnelled one, and the ssh_session is the associated ssh
+    # pipe. This is for the 'ssh -L' type of tunneling: a process needs to
+    # connect to a cluster of remote EasyServe processes.
     def tunnelled
       return [self, nil] if
         ["localhost", "127.0.0.1", EasyServe.host_name].include? connect_host

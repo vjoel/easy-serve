@@ -1,7 +1,9 @@
 class EasyServe
   # Returns list of services that are accessible from +host+, setting
-  # up an ssh tunnel if specified. Note that OpenSSH 6.0 or later is required
-  # for the tunnel option.
+  # up an ssh tunnel if specified. This is for the 'ssh -R' type of tunneling:
+  # a process, started remotely by some main process, needs to connect back to
+  # its siblings, other children of that main process. OpenSSH 6.0 or later is
+  # advised, but not necessary, for the tunnel option.
   def accessible_services host, tunnel: false
     tcp_svs = services.values.grep(TCPService)
     return tcp_svs unless tunnel and host != "localhost" and host != "127.0.0.1"
