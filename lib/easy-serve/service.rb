@@ -70,6 +70,12 @@ class EasyServe
       Process.kill "TERM", pid
       Process.waitpid pid
     end
+
+    class Service
+      def tunnelled(*)
+        [self, nil]
+      end
+    end
   end
 
   class UNIXService < Service
@@ -140,6 +146,46 @@ class EasyServe
 
     def bump!
       @port += 1 unless port == 0 # should not happen
+    end
+
+    # Returns [service, ssh_session|nil]. The service is self and ssh_session is
+    # nil, unless tunneling is appropriate, in which case the returned service
+    # is the tunnelled one, and the ssh_session is the associated ssh pipe.
+    def tunnelled this_host_name
+      return [self, nil] if
+        ["localhost", "127.0.0.1", this_host_name].include? connect_host
+
+      if ["localhost", "127.0.0.1", "0.0.0.0"].include? bind_host
+        rhost = "localhost"
+      else
+        rhost = bind_host
+      end
+
+      svr = TCPServer.new "localhost", 0 # no rescue; error here is fatal
+      lport = svr.addr[1]
+      svr.close
+      ## why doesn't `ssh -L 0:host:port` work?
+
+      # possible alternative: ssh -f -N -o ExitOnForwardFailure: yes
+      cmd = [
+        "ssh", connect_host,
+        "-L", "#{lport}:#{rhost}:#{port}",
+        "echo ok && cat"
+      ]
+      ssh = IO.popen cmd, "w+"
+      ## how to tell if lport in use and retry? ssh doesn't seem to fail,
+      ## or maybe it fails by printing a message on the remote side
+
+      ssh.sync = true
+      line = ssh.gets
+      unless line and line.chomp == "ok" # wait for forwarding
+        raise "Could not start ssh forwarding: #{cmd.join(" ")}"
+      end
+
+      service = EasyServe::TCPService.new name,
+        bind_host: bind_host, connect_host: 'localhost', port: lport
+
+      return [service, ssh]
     end
   end
 end

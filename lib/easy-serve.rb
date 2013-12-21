@@ -35,6 +35,11 @@ class EasyServe
   attr_reader :services_file
   attr_reader :interactive
   
+  # Is this a sibling process, started by the same parent process that
+  # started the services, even if started remotely?
+  # Implies not owner, but not conversely.
+  attr_reader :sibling
+
   def self.start(log: default_logger, **opts)
     ez = new(**opts, log: log)
     yield ez
@@ -52,6 +57,8 @@ class EasyServe
     @children = [] # pid
     @passive_children = [] # pid
     @owner = false
+    @sibling = true
+    @ssh_sessions = []
     @tmpdir = nil
     @services = opts[:services] # name => service
     
@@ -71,7 +78,7 @@ class EasyServe
 
   def load_service_table
     File.open(services_file) do |f|
-      YAML.load(f)
+      YAML.load(f).tap {@sibling = false}
     end
   end
   
@@ -245,5 +252,21 @@ class EasyServe
   # service (child process)
   def no_interrupt_if_interactive
     trap("INT") {} if interactive
+  end
+
+  # Set up tunnels as needed and modify the service list so that connections
+  # will go to local endpoints in those cases. Call this method in non-sibling
+  # invocations, such as when the server file has been copied to a remote
+  # host and used to start a new client.
+  def tunnel_to_remote_services
+    return if sibling
+
+    tunnelled_services = {}
+    services.each do |service_name, service|
+      service, ssh_session = service.tunnelled(host_name)
+      tunnelled_services[service_name] = service
+      @ssh_sessions << ssh_session if ssh_session # let GC close them
+    end
+    @services = tunnelled_services
   end
 end
