@@ -271,7 +271,7 @@ class EasyServe
     tcp_svs = services.values.grep(TCPService)
     return tcp_svs unless tunnel and host != "localhost" and host != "127.0.0.1"
 
-    require 'easy-serve/accessible-services'
+    require 'easy-serve/service/accessible'
 
     tcp_svs.map do |service|
       service, ssh_session = service.accessible(host, log)
