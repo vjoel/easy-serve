@@ -262,10 +262,30 @@ class EasyServe
     trap("INT") {} if interactive
   end
 
+  # Returns list of services that are accessible from +host+, setting
+  # up an ssh tunnel if specified. This is for the 'ssh -R' type of tunneling:
+  # a process, started remotely by some main process, needs to connect back to
+  # its siblings, other children of that main process. OpenSSH 6.0 or later is
+  # advised, but not necessary, for the tunnel option.
+  def accessible_services host, tunnel: false
+    tcp_svs = services.values.grep(TCPService)
+    return tcp_svs unless tunnel and host != "localhost" and host != "127.0.0.1"
+
+    require 'easy-serve/accessible-services'
+
+    tcp_svs.map do |service|
+      service, ssh_session = service.accessible(host, log)
+      @ssh_sessions << ssh_session # let GC close them
+      service
+    end
+  end
+
   # Set up tunnels as needed and modify the service list so that connections
   # will go to local endpoints in those cases. Call this method in non-sibling
   # invocations, such as when the server file has been copied to a remote
-  # host and used to start a new client.
+  # host and used to start a new client. This is for the 'ssh -L' type of
+  # tunneling: a process needs to connect to a cluster of remote EasyServe
+  # processes that already exist and do not know about this process.
   def tunnel_to_remote_services
     return if sibling
 

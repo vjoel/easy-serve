@@ -1,5 +1,4 @@
 require 'msgpack'
-require 'easy-serve/accessible-services'
 
 class EasyServe
   # useful simple cases in testing and in production, but long eval strings

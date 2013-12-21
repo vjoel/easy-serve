@@ -1,5 +1,4 @@
 require 'msgpack'
-require 'easy-serve/accessible-services'
 
 class EasyServe
   # useful in production, though it requires remote lib files to be set up.
