@@ -18,14 +18,46 @@ class EasyServe
       fwd = "0:#{service_host}:#{service.port}"
       remote_port = nil
       tries = 10
+
+      @ssh_6 ||= (Integer(`ssh -V 2>&1`[/OpenSSH_(\d)/i, 1]) >= 6 rescue false)
+
       1.times do
-        out = `ssh -O forward -R #{fwd} #{host}`
-        begin
-          remote_port = Integer(out)
-        rescue
-          log.error "Unable to set up dynamic ssh port forwarding. " +
-            "Please check if ssh -v is at least 6.0."
-          raise
+        if @ssh_6
+          remote_port = Integer(`ssh -O forward -R #{fwd} #{host}`)
+        else
+          log.warn "Unable to set up dynamic ssh port forwarding. " +
+            "Please check if ssh -v is at least 6.0. " +
+            "Falling back to new ssh session."
+
+          code = <<-CODE
+            require 'socket'
+            svr = TCPServer.new "localhost", 0 # no rescue; error here is fatal
+            puts svr.addr[1]
+            svr.close
+          CODE
+
+          remote_port =
+            IO.popen ["ssh", host, "ruby"], "w+" do |ruby|
+              ruby.puts code
+              ruby.close_write
+              Integer(ruby.gets)
+            end
+
+          cmd = [
+            "ssh", host,
+            "-R", "#{remote_port}:#{service_host}:#{service.port}",
+            "echo ok && cat"
+          ]
+          ssh = IO.popen cmd, "w+"
+          ## how to tell if port in use and retry? ssh doesn't seem to fail,
+          ## or maybe it fails by printing a message on the remote side
+
+          ssh.sync = true
+          line = ssh.gets
+          unless line and line.chomp == "ok" # wait for forwarding
+            raise "Could not start ssh forwarding: #{cmd.join(" ")}"
+          end
+          @ssh_sessions << ssh
         end
 
         if remote_port == 0
