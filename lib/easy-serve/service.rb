@@ -122,10 +122,10 @@ class EasyServe
 
     attr_reader :bind_host, :connect_host, :host, :port
 
-    def initialize name, bind_host: nil, connect_host: nil, port: 0
+    def initialize name, bind_host: nil, connect_host: nil, host: nil, port: 0
       super name
       @bind_host, @connect_host, @port = bind_host, connect_host, port
-      @host = EasyServe.host_name
+      @host ||= EasyServe.host_name
     end
 
     def serve max_tries: 1, log: log
@@ -186,7 +186,7 @@ class EasyServe
       end
 
       service = TCPService.new name,
-        bind_host: bind_host, connect_host: 'localhost', port: lport
+        bind_host: bind_host, connect_host: 'localhost', host: host, port: lport
 
       return [service, ssh]
     end
