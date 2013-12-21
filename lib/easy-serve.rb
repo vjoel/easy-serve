@@ -186,6 +186,10 @@ class EasyServe
       end
     end
   end
+
+  def EasyServe.ssh_supports_dynamic_ports_forwards
+    @ssh_6 ||= (Integer(`ssh -V 2>&1`[/OpenSSH_(\d)/i, 1]) >= 6 rescue false)
+  end
   
   MAX_TRIES = 10
 

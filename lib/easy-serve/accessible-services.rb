@@ -19,10 +19,8 @@ class EasyServe
       remote_port = nil
       tries = 10
 
-      @ssh_6 ||= (Integer(`ssh -V 2>&1`[/OpenSSH_(\d)/i, 1]) >= 6 rescue false)
-
       1.times do
-        if @ssh_6
+        if EasyServe.ssh_supports_dynamic_ports_forwards
           remote_port = Integer(`ssh -O forward -R #{fwd} #{host}`)
         else
           log.warn "Unable to set up dynamic ssh port forwarding. " +
