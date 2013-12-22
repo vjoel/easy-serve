@@ -7,7 +7,13 @@ unless services_file
 
     Usage: #$0 services.yaml
 
-    Reads the yaml file and tunnels to the service.
+    Reads the yaml file and tunnels to the service. Note that
+    the filename may be remote, like host:path, so the lazy way
+    to run the example is:
+
+        host1$ ruby server.rb sv
+
+        host2$ ruby client.rb host1:path/to/sv
 
   END
 end
