@@ -50,6 +50,18 @@ class EasyServe
     ez.cleanup if ez
   end
 
+  # Options:
+  #
+  #   services_file: filename
+  #
+  #       name of file that server addresses are written to (if this process
+  #       is creating them) or read from (if this process is accessing them)
+  #
+  #   interactive: true|false
+  #
+  #       true means do not propagate ^C to child processes
+  #       this is useful primarily when running in irb
+  #
   def initialize **opts
     @services_file = opts[:services_file]
     @interactive = opts[:interactive]
