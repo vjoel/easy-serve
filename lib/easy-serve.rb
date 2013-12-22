@@ -55,12 +55,18 @@ class EasyServe
   #   services_file: filename
   #
   #       name of file that server addresses are written to (if this process
-  #       is creating them) or read from (if this process is accessing them)
+  #       is creating them) or read from (if this process is accessing them).
+  #       If not specified, services will be available to child processes,
+  #       but harder to access from other processes.
+  #
+  #       If the filename has a ':' in it, we assume that it is a remote
+  #       file, specified as [user@]host:path/to/file as in scp and rsync,
+  #       and attempt to read its contents over an ssh connection.
   #
   #   interactive: true|false
   #
-  #       true means do not propagate ^C to child processes
-  #       this is useful primarily when running in irb
+  #       true means do not propagate ^C to child processes.
+  #       This is useful primarily when running in irb.
   #
   def initialize **opts
     @services_file = opts[:services_file]
@@ -89,9 +95,20 @@ class EasyServe
   end
 
   def load_service_table
-    File.open(services_file) do |f|
-      YAML.load(f).tap {@sibling = false}
+    case services_file
+    when /\A(\S*):(.*)/
+      IO.popen ["ssh", $1, "cat #$2"], "r" do |f|
+        load_service_table_from_io f
+      end
+    else
+      File.open(services_file) do |f|
+        load_service_table_from_io f
+      end
     end
+  end
+
+  def load_service_table_from_io io
+    YAML.load(io).tap {@sibling = false}
   end
   
   def init_service_table
