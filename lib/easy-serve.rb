@@ -270,11 +270,6 @@ class EasyServe
     c
   end
   
-  def client *args, &block
-    warn "EasyServe#client is deprecated; use #child"
-    child *args, &block
-  end
-  
   def local *service_names
     conns = service_names.map {|sn| services[sn].connect}
     yield(*conns) if block_given?
