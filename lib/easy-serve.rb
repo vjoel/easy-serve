@@ -188,7 +188,7 @@ class EasyServe
     if base
       "#{base}-#{name}"
     else
-      File.join(tmpdir, "sock-#{name}")
+      File.join(tmpdir, "sock-#{name}") ## permissions?
     end
   end
 
@@ -222,6 +222,36 @@ class EasyServe
   
   MAX_TRIES = 10
 
+  # Start a service named +name+. The name is referenced in #child, #local,
+  # and #remote to connect a new process to this service.
+  #
+  # The +proto+ can be either :unix (the default) or :tcp; the value can also
+  # be specifed with the proto: key-value argument.
+  #
+  # Other key-value arguments are:
+  #
+  # :path :: for unix sockets, path to the socket file to be created
+  #
+  # :base :: for unix sockets, a base string for constructing the
+  #          socket filename, if :path option is not provided;
+  #          if neither :path nor :base specified, socket is in a tmp dir
+  #          with filename based on +name+.
+  #
+  # :bind_host :: interface this service listens on, such as:
+  #
+  #       "0.0.0.0", "<any>" (same)
+  #
+  #       "localhost", "127.0.0.1" (same)
+  #
+  #       or a specific hostname.
+  #
+  # :connect_host :: host specifier used by remote clients to connect.
+  #                  By default, this is constructed from the bind_host.
+  #                  For example, with bind_host: "<any>", the default
+  #                  connect_host is the current hostname (see #host_name).
+  #
+  # :port :: port this service listens on; defaults to 0 to choose a free port
+  #
   def service name, proto = nil, **opts
     proto ||= opts.delete(:proto) || :unix
     case proto
@@ -232,7 +262,7 @@ class EasyServe
       opts[:connect_host] ||=
         case opts[:bind_host]
         when nil, "0.0.0.0", /\A<any>\z/i
-          host_name ## maybe local connectors should use "localhost" ?
+          host_name
         when "localhost", "127.0.0.1"
           "localhost"
         end
