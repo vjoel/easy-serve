@@ -34,7 +34,7 @@ def EasyServe.manage_remote_eval_client msg
         pr = eval "proc do |conns, host, log| #{eval_string}; end"
         pr[conns, host, log]
       rescue => ex
-        puts "ez error", ex, ex.backtrace
+        puts "ez error", ex.inspect, ex.backtrace
       end
     end
     

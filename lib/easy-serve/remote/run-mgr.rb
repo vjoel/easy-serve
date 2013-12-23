@@ -42,7 +42,7 @@ def EasyServe.manage_remote_run_client msg
         ro = cl.new(conns, host, log, *args)
         ro.run
       rescue => ex
-        puts "ez error", ex, ex.backtrace
+        puts "ez error", ex.inspect, ex.backtrace
       end
     end
     
