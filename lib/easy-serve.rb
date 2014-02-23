@@ -162,12 +162,26 @@ class EasyServe
   
   def start_services
     if @owner
+      if services_file
+        begin
+          FileUtils.ln_s services_file, ".lock.#{services_file}"
+          # Successful creation of the lock file gives this process the
+          # right to create the services_file itself.
+        rescue Errno::EEXIST
+          raise Errno::EEXIST, "Services at #{services_file} already exist."
+        end
+      end
+
       log.debug {"starting services"}
       yield
 
       if services_file
-        File.open(services_file, "w") do |f|
-          YAML.dump(services, f)
+        begin
+          File.open(services_file, "w") do |f|
+            YAML.dump(services, f)
+          end
+        ensure
+          FileUtils.rm_f ".lock.#{services_file}"
         end
       end
     end
