@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.summary = "Framework for starting tcp/unix services and connected clients under one parent process and on remote hosts"
 
-  s.add_dependency 'msgpack'
+  s.add_dependency 'msgpack', '~> 0'
 end
