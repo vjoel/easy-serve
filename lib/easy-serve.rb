@@ -6,8 +6,10 @@ require 'fileutils'
 require 'easy-serve/service'
 
 class EasyServe
-  VERSION = "0.11"
-  
+  VERSION = "0.12"
+
+  class ServicesExistError < RuntimeError; end
+
   class EasyFormatter < Logger::Formatter
     Format = "%s: %s: %s\n"
 
@@ -70,6 +72,7 @@ class EasyServe
   #
   def initialize **opts
     @services_file = opts[:services_file]
+    @created_services_file = false
     @interactive = opts[:interactive]
     @log = opts[:log] || self.class.null_logger
     @children = [] # pid
@@ -148,7 +151,7 @@ class EasyServe
         service.cleanup
       end
 
-      if services_file
+      if @created_services_file
         begin
           FileUtils.rm services_file
         rescue Errno::ENOENT
@@ -161,32 +164,59 @@ class EasyServe
   end
   
   def start_services
-    if @owner
-      if services_file
-        begin
-          FileUtils.ln_s services_file, ".lock.#{services_file}"
-          # Successful creation of the lock file gives this process the
-          # right to create the services_file itself.
-        rescue Errno::EEXIST
-          raise Errno::EEXIST, "Services at #{services_file} already exist."
-        end
+    return unless @owner
+
+    if not services_file
+      log.debug {"starting services without services_file"}
+      yield
+      return
+    end
+
+    lock_success = with_lock_file *File.split(services_file) do
+      # Successful creation of the lock file gives this process the
+      # right to check and create the services_file itself.
+
+      if File.exist? services_file
+        raise ServicesExistError,
+          "Services at #{services_file.inspect} already exist."
       end
 
-      log.debug {"starting services"}
+      log.debug {"starting services stored in #{services_file.inspect}"}
       yield
 
-      if services_file
-        begin
-          File.open(services_file, "w") do |f|
-            YAML.dump(services, f)
-          end
-        ensure
-          FileUtils.rm_f ".lock.#{services_file}"
-        end
+      tmp = services_file + ".tmp"
+      File.open(tmp, "w") do |f|
+        YAML.dump(services, f)
       end
+      FileUtils.mv(tmp, services_file)
+      @created_services_file = true
+    end
+
+    unless lock_success
+      raise ServicesExistError,
+        "Services at #{services_file.inspect} are being created."
     end
   end
-  
+
+  # Returns true if this process got the lock.
+  def with_lock_file dir, base
+    lock_file = File.join(dir, ".lock.#{base}")
+
+    begin
+      FileUtils.ln_s ".#{Process.pid}.#{base}", lock_file
+    rescue Errno::EEXIST
+      return false
+    end
+
+    begin
+      yield
+    ensure
+      FileUtils.rm_f lock_file
+    end
+
+    true
+  end
+
   def tmpdir
     @tmpdir ||= begin
       require 'tmpdir'
