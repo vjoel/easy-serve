@@ -1,0 +1,16 @@
+bind host  |              connect host
+           +------------------------------------------------------
+           |  local           remote TCP            SSH tunnel
+-----------+------------------------------------------------------
+
+localhost     'localhost'     X                     'localhost'
+
+0.0.0.0       'localhost'     hostname(*)           'localhost'
+
+hostname      hostname        hostname              'localhost'(**)
+
+
+* use hostname as best guess, can override; append ".local" if hostname not qualified
+
+** forwarding set up to hostname[.local] instead of localhost
+
