@@ -15,3 +15,41 @@ use cases
 
 4. ditto but where the tunnel is set up by the remote client, without
    special assistance from the server [examples/tunnel](examples/tunnel)
+
+synopsis
+--------
+
+```ruby
+require 'easy-serve'
+
+EasyServe.start do |ez|
+  ez.log.level = Logger::ERROR
+
+  ez.start_services do
+    ez.service "echo", :unix do |svr|
+      Thread.new do
+        loop do
+          conn = svr.accept
+          msg = conn.read
+          puts msg
+          conn.write "echo #{msg}"
+          conn.close_write
+        end
+      end
+    end
+  end
+
+  ez.child "echo" do |echo_conn|
+    echo_conn.write "hello from client"
+    echo_conn.close_write
+    puts echo_conn.read
+  end
+end
+```
+
+Output:
+
+```
+hello from client
+echo hello from client
+```
