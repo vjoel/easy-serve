@@ -35,6 +35,8 @@ class EasyServe
   attr_reader :children
   attr_reader :passive_children
   attr_reader :services_file
+
+  # True means do not propagate ^C to child processes.
   attr_reader :interactive
   
   # Is this a sibling process, started by the same parent process that
@@ -344,6 +346,7 @@ class EasyServe
     c
   end
   
+  # A local client runs in the same process, not a child process.
   def local *service_names
     conns = service_names.map {|sn| services[sn].connect}
     yield(*conns) if block_given?
