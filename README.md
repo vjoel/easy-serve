@@ -21,6 +21,8 @@ EasyServe takes the headache out of:
 
 * Working around poor support for dynamic port forwarding in old versions of OpenSSH.
 
+* Working around a race condition in an old version of OpenSSH.
+
 * Choosing between -L and -R styles of tunneling, depending on whether the remote process starts independently of the services.
 
 * Avoiding race conditions in the service setup phase.
