@@ -108,5 +108,5 @@ EasyServe.start do |ez|
   # Note use of \#{} to interpolate variables that are only available
   # in the binding where the code is eval-ed. Alternately, use
   #   eval: %Q{...}
-  # but then interpolation from this script is not posssible.
+  # but then interpolation from this script is not possible.
 end
