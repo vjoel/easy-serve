@@ -57,7 +57,7 @@ class EasyServe
     SERVICE_CLASS[:unix] = self
 
     attr_reader :path
-    
+
     def initialize name, path: nil
       super name
       @path = path
@@ -67,7 +67,7 @@ class EasyServe
       super.tap do |svr|
         found_path = svr.addr[1]
         log.debug "#{inspect} is listening at #{found_path}"
-      
+
         if found_path != path
           log.error "Unexpected path: #{found_path} != #{path}"
         end

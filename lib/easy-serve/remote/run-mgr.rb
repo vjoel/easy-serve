@@ -15,7 +15,7 @@ def EasyServe.manage_remote_run_client msg
   services_list.each do |service|
     services[service.name] = service
   end
-  
+
 ### opt for tmpdir and send files to it via ssh
   Dir.chdir(dir) if dir
   load file
@@ -36,7 +36,7 @@ def EasyServe.manage_remote_run_client msg
     log.level = log_level
     log.formatter = nil if $VERBOSE
 
-    ez.local *service_names do |*conns|
+    ez.local(*service_names) do |*conns|
       begin
         cl = Object.const_get(class_name)
         ro = cl.new(conns, host, log, *args)
@@ -45,7 +45,7 @@ def EasyServe.manage_remote_run_client msg
         puts "ez error", ex.inspect, ex.backtrace
       end
     end
-    
+
     log.info "done"
   end
 rescue LoadError, ScriptError, StandardError => ex

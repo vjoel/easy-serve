@@ -23,12 +23,12 @@ class EasyServe
           require 'drb'
           require 'yaml'
           require 'easy-serve'
-          
+
           service_names = #{service_names.inspect}
           services = YAML.load(#{YAML.dump(services).inspect})
           log_level = #{log.level}
           host_uri = #{host_uri.inspect}
-          
+
           EasyServe.start services: services do |ez|
             log = ez.log
             log.level = log_level
@@ -38,7 +38,7 @@ class EasyServe
               begin
                 DRb.start_service(host_uri, {conns: conns})
                 puts DRb.uri
-                
+
                 Thread.new do
                   loop do
                     sleep 1
@@ -49,7 +49,7 @@ class EasyServe
                     end
                   end
                 end
-                
+
                 DRb.thread.join
 
               rescue => ex
@@ -61,10 +61,10 @@ class EasyServe
           puts "ez error", ex, ex.backtrace
         end
       }
-      
+
       ssh.close_write
       result = ssh.gets
-      
+
       if !result
         raise RemoteError, "problem with ssh connection to remote"
       else
@@ -79,7 +79,7 @@ class EasyServe
                 ssh.gets # consume the "."
               end
             end
-          
+
             log.debug "remote is at #{uri}"
             ro = DRbObject.new_with_uri(uri)
             conns = ro[:conns]

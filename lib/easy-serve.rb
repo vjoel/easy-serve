@@ -23,7 +23,7 @@ class EasyServe
     log.formatter = EasyFormatter.new
     log
   end
-  
+
   def self.null_logger
     log = Logger.new('/dev/null')
     log.level = Logger::FATAL
@@ -38,7 +38,7 @@ class EasyServe
 
   # True means do not propagate ^C to child processes.
   attr_reader :interactive
-  
+
   # Is this a sibling process, started by the same parent process that
   # started the services, even if started remotely?
   # Implies not owner, but not conversely.
@@ -84,7 +84,7 @@ class EasyServe
     @ssh_sessions = []
     @tmpdir = nil
     @services = opts[:services] # name => service
-    
+
     unless services
       if services_file
         @services =
@@ -115,14 +115,14 @@ class EasyServe
   def load_service_table_from_io io
     YAML.load(io).tap {@sibling = false}
   end
-  
+
   def init_service_table
     @services ||= begin
       @owner = true
       {}
     end
   end
-  
+
   def cleanup
     handler = trap("INT") do
       trap("INT", handler)
@@ -146,7 +146,7 @@ class EasyServe
         log.debug {"client pid=#{pid} was already waited for"}
       end
     end
-    
+
     if @owner
       services.each do |name, service|
         log.info "stopping #{name}"
@@ -161,10 +161,10 @@ class EasyServe
         end
       end
     end
-    
+
     clean_tmpdir
   end
-  
+
   def start_services
     return unless @owner
 
@@ -174,7 +174,7 @@ class EasyServe
       return
     end
 
-    lock_success = with_lock_file *File.split(services_file) do
+    lock_success = with_lock_file(*File.split(services_file)) do
       # Successful creation of the lock file gives this process the
       # right to check and create the services_file itself.
 
@@ -225,11 +225,11 @@ class EasyServe
       Dir.mktmpdir "easy-serve-"
     end
   end
-  
+
   def clean_tmpdir
     FileUtils.remove_entry @tmpdir if @tmpdir
   end
-  
+
   def choose_socket_filename name, base: nil
     if base
       "#{base}-#{name}"
@@ -241,7 +241,7 @@ class EasyServe
   def self.bump_socket_filename name
     name =~ /-\d+\z/ ? name.succ : name + "-0"
   end
-  
+
   def host_name
     EasyServe.host_name
   end
@@ -265,7 +265,7 @@ class EasyServe
   def EasyServe.ssh_supports_dynamic_ports_forwards
     @ssh_6 ||= (Integer(`ssh -V 2>&1`[/OpenSSH_(\d)/i, 1]) >= 6 rescue false)
   end
-  
+
   MAX_TRIES = 10
 
   # Start a service named +name+. The name is referenced in #child, #local,
@@ -316,11 +316,11 @@ class EasyServe
 
     service = Service.for(name, proto, **opts)
     rd, wr = IO.pipe
-    pid = fork do
+    fork do
       rd.close
       log.progname = name
       log.info "starting"
-      
+
       svr = service.serve(max_tries: MAX_TRIES, log: log)
       yield svr if block_given?
       no_interrupt_if_interactive
@@ -345,7 +345,7 @@ class EasyServe
     (passive ? passive_children : children) << c
     c
   end
-  
+
   # A local client runs in the same process, not a child process.
   def local *service_names
     conns = service_names.map {|sn| services[sn].connect}
@@ -356,7 +356,7 @@ class EasyServe
     end
     log.info "stopped local client"
   end
-  
+
   # ^C in the irb session (parent process) should not kill the
   # service (child process)
   def no_interrupt_if_interactive

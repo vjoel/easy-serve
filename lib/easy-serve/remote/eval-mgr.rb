@@ -12,7 +12,7 @@ def EasyServe.manage_remote_eval_client msg
   services_list.each do |service|
     services[service.name] = service
   end
-  
+
   log_args = msg["log"]
   log =
     case log_args
@@ -29,7 +29,7 @@ def EasyServe.manage_remote_eval_client msg
     log.level = log_level
     log.formatter = nil if $VERBOSE
 
-    ez.local *service_names do |*conns|
+    ez.local(*service_names) do |*conns|
       begin
         pr = eval "proc do |conns, host, log| #{eval_string}; end"
         pr[conns, host, log]
@@ -43,7 +43,7 @@ def EasyServe.manage_remote_eval_client msg
         puts ex.backtrace
       end
     end
-    
+
     log.info "done"
   end
 rescue LoadError, ScriptError, StandardError => ex
