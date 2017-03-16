@@ -6,7 +6,7 @@ require 'fileutils'
 require 'easy-serve/service'
 
 class EasyServe
-  VERSION = "0.14"
+  VERSION = "0.15"
 
   class ServicesExistError < RuntimeError; end
 

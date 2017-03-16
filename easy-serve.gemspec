@@ -24,6 +24,6 @@ Gem::Specification.new do |s|
   s.summary = "Framework for starting tcp/unix services and connected clients under one parent process and on remote hosts"
 
   s.required_ruby_version = Gem::Requirement.new("~> 2.0")
-  s.add_dependency 'msgpack', '~> 0'
+  s.add_dependency 'msgpack', '~> 1'
   s.add_development_dependency("rake", "~> 0")
 end
